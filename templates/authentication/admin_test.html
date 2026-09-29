@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Halaman Admin</h1>
+
+<p>
+    Halaman ini hanya dapat diakses oleh user dengan role Admin.
+</p>
+
+<p>
+    Selamat datang, {{ request.session.name }}.
+</p>
+
+<a href="{% url 'dashboard' %}">
+    Kembali ke Dashboard
+</a>
+
+{% endblock %}

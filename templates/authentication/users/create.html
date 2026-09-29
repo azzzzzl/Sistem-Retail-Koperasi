@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Tambah User</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="message">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <div>
+        <label>Username</label>
+        <input
+            type="text"
+            name="username"
+            required
+        >
+    </div>
+
+    <div>
+        <label>Nama</label>
+        <input
+            type="text"
+            name="name"
+            required
+        >
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input
+            type="email"
+            name="email"
+            required
+        >
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input
+            type="password"
+            name="password"
+            required
+        >
+    </div>
+
+    <div>
+        <label>Role</label>
+
+        <select name="role" required>
+
+            <option value="">
+                -- Pilih Role --
+            </option>
+
+            {% for role in roles %}
+
+                <option value="{{ role }}">
+                    {{ role }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+    </div>
+
+    <button type="submit">
+        Simpan
+    </button>
+
+</form>
+
+<p>
+    <a href="{% url 'user_list' %}">
+        Kembali
+    </a>
+</p>
+
+{% endblock %}

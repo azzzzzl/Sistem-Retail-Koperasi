@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>User Management</h1>
+
+<p>
+    Anda mempunyai permission untuk mengakses
+    user management.
+</p>
+
+<p>
+    Role: {{ request.session.role }}
+</p>
+
+<a href="{% url 'dashboard' %}">
+    Kembali ke Dashboard
+</a>
+
+{% endblock %}

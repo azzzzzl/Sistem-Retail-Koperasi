@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Ubah Role User</h2>
+
+<p>
+    Username:
+    <strong>{{ user.username }}</strong>
+</p>
+
+<p>
+    Role saat ini:
+    <strong>{{ user.role }}</strong>
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div>
+        <label>Role Baru</label>
+
+        <select name="role" required>
+            <option value="">-- Pilih Role --</option>
+
+            {% for role in roles %}
+                <option
+                    value="{{ role }}"
+                    {% if user.role == role %}selected{% endif %}
+                >
+                    {{ role }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <br>
+
+    <button type="submit">
+        Simpan Role
+    </button>
+
+    <a href="/users/{{ user.id }}/">
+        Batal
+    </a>
+</form>
+
+{% endblock %}

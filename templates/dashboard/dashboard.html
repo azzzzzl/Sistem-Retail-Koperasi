@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ dashboard.title }}</h1>
+
+<p>
+    Selamat datang,
+    <strong>{{ name }}</strong>.
+</p>
+
+<p>
+    Username: {{ username }} |
+    Role: <strong>{{ role }}</strong>
+</p>
+
+<p>
+    {{ dashboard.description }}
+</p>
+
+<hr>
+
+<h2>Fitur yang tersedia</h2>
+
+<ul>
+    {% for feature in dashboard.features %}
+        <li>{{ feature }}</li>
+    {% empty %}
+        <li>Belum ada fitur yang tersedia.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

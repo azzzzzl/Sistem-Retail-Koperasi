@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Manajemen User</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="message">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<p>
+    <a href="{% url 'user_create' %}">
+        Tambah User
+    </a>
+</p>
+
+<table border="1" cellpadding="8">
+
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Nama</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for user in users %}
+
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.status }}</td>
+
+            <td>
+                <a href="{% url 'user_detail' user_id=user.id %}">
+                    Detail
+                </a>
+
+                <a href="{% url 'user_edit' user_id=user.id %}">
+                    Edit
+                </a>
+            </td>
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="6">
+                Belum ada user.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

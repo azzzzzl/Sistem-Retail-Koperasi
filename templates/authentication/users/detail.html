@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Detail User</h1>
+
+<p>
+    <strong>Username:</strong>
+    {{ user.username }}
+</p>
+
+<p>
+    <strong>Nama:</strong>
+    {{ user.name }}
+</p>
+
+<p>
+    <strong>Email:</strong>
+    {{ user.email }}
+</p>
+
+<p>
+    <strong>Role:</strong>
+    {{ user.role }}
+</p>
+
+<p>
+    <strong>Status:</strong>
+    {{ user.status }}
+</p>
+
+<p>
+    <strong>Dibuat:</strong>
+    {{ user.createdAt }}
+</p>
+
+<p>
+    <strong>Diperbarui:</strong>
+    {{ user.updatedAt }}
+</p>
+
+<p>
+    <a href="{% url 'user_edit' user_id=user.id %}">
+        Edit User
+    </a>
+</p>
+
+<a href="/users/{{ user.id }}/reset-password/">
+        Reset Password
+</a>
+
+<a href="/users/{{ user.id }}/role/">
+    Ubah Role
+</a>
+
+<p>
+    <a href="{% url 'user_list' %}">
+        Kembali
+    </a>
+</p>
+
+<p>
+    <strong>Status:</strong>
+    {{ user.status }}
+</p>
+
+<form method="post" action="/users/{{ user.id }}/status/">
+    {% csrf_token %}
+
+    {% if user.status == "active" %}
+        <button type="submit">
+            Nonaktifkan User
+        </button>
+    {% else %}
+        <button type="submit">
+            Aktifkan User
+        </button>
+    {% endif %}
+</form>
+
+{% endblock %}
