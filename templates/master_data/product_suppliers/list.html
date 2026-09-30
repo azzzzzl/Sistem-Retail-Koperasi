@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Produk Supplier</h2>
+
+        <a
+            href="{% url 'master_data:product_supplier_create' %}"
+            class="btn btn-primary"
+        >
+            Tambah Produk Supplier
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive">
+
+        <table class="table table-bordered table-striped">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Product ID</th>
+                    <th>Supplier ID</th>
+                    <th>Kode Produk Supplier</th>
+                    <th>Harga Beli</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in product_suppliers %}
+
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.product_id }}</td>
+                    <td>{{ item.supplier_id }}</td>
+                    <td>
+                        {{ item.supplier_product_code|default:"-" }}
+                    </td>
+                    <td>{{ item.purchase_price }}</td>
+                    <td>{{ item.status }}</td>
+
+                    <td>
+                        <a
+                            href="{% url 'master_data:product_supplier_update' product_supplier_id=item.id %}"
+                            class="btn btn-sm btn-warning"
+                        >
+                            Edit
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="{% url 'master_data:product_supplier_delete' product_supplier_id=item.id %}"
+                            style="display:inline;"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Hapus data ini?');"
+                            >
+                                Hapus
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7" class="text-center">
+                        Belum ada data produk supplier.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
