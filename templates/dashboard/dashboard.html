@@ -18,10 +18,6 @@
     {{ dashboard.description }}
 </p>
 
-{% if role == "Admin" or role == "Kasir" %}
-<p><a href="{% url 'pos:pos' %}">Buka POS</a> | <a href="{% url 'pos:history' %}">Riwayat penjualan</a></p>
-{% endif %}
-
 <hr>
 
 <h2>Fitur yang tersedia</h2>
