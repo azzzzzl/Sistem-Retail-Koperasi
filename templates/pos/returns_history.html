@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Riwayat Retur Penjualan</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    {% if returns %}
+
+        <table border="1" cellpadding="8" cellspacing="0">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>ID Retur</th>
+                    <th>No. Invoice</th>
+                    <th>Tanggal Retur</th>
+                    <th>Total Retur</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for return_data in returns %}
+
+                    <tr>
+
+                        <td>
+                            {{ forloop.counter }}
+                        </td>
+
+                        <td>
+                            {{ return_data.return_id }}
+                        </td>
+
+                        <td>
+                            {{ return_data.invoiceNumber }}
+                        </td>
+
+                        <td>
+                            {{ return_data.returnDate|date:"d-m-Y H:i" }}
+                        </td>
+
+                        <td>
+                            Rp {{ return_data.total|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            {{ return_data.status }}
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    {% else %}
+
+        <p>
+            Belum ada data retur penjualan.
+        </p>
+
+    {% endif %}
+
+    <br>
+
+    <a href="{% url 'sales_history' %}">
+        Kembali ke Riwayat Penjualan
+    </a>
+
+</div>
+
+{% endblock %}

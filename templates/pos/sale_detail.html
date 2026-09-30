@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Detail Transaksi Penjualan</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    <h2>Informasi Transaksi</h2>
+
+    <p>
+        <strong>No. Invoice:</strong>
+        {{ sale.invoiceNumber }}
+    </p>
+
+    <p>
+        <strong>Tanggal:</strong>
+        {{ sale.saleDate|date:"d-m-Y H:i" }}
+    </p>
+
+    <p>
+        <strong>Kasir:</strong>
+        {{ sale.cashierId }}
+    </p>
+
+    <p>
+        <strong>Status:</strong>
+        {{ sale.status }}
+    </p>
+
+    <hr>
+
+    <h2>Detail Produk</h2>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>SKU</th>
+                <th>Barcode</th>
+                <th>Produk</th>
+                <th>Harga</th>
+                <th>Quantity</th>
+                <th>Diskon</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in sale.items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.sku }}</td>
+                    <td>{{ item.barcode }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        Rp {{ item.sellingPrice|floatformat:0 }}
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        Rp {{ item.discount|floatformat:0 }}
+                    </td>
+                    <td>
+                        Rp {{ item.subtotal|floatformat:0 }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>Ringkasan Pembayaran</h2>
+
+    <p>
+        <strong>Subtotal:</strong>
+        Rp {{ sale.subtotal|floatformat:0 }}
+    </p>
+
+    <p>
+        <strong>Diskon:</strong>
+        Rp {{ sale.discount|floatformat:0 }}
+    </p>
+
+    <p>
+        <strong>Pajak:</strong>
+        Rp {{ sale.tax|floatformat:0 }}
+    </p>
+
+    <p>
+        <strong>Total:</strong>
+        Rp {{ sale.total|floatformat:0 }}
+    </p>
+
+    <p>
+        <strong>Pembayaran:</strong>
+        Rp {{ sale.payment|floatformat:0 }}
+    </p>
+
+    <p>
+        <strong>Kembalian:</strong>
+        Rp {{ sale.change|floatformat:0 }}
+    </p>
+
+    <hr>
+
+    <a href="{% url 'sales_history' %}">
+        Kembali ke Riwayat Penjualan
+    </a>
+
+    |
+
+    <a href="{% url 'pos_receipt' sale.sale_id %}">
+        Lihat Struk
+    </a>
+
+    |
+    <a href="{% url 'sales_return' sale.sale_id %}">
+        Retur Penjualan
+    </a>
+
+</div>
+
+{% endblock %}

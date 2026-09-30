@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>
+        {% if category %}
+            Edit Kategori
+        {% else %}
+            Tambah Kategori
+        {% endif %}
+    </h2>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">
+                Kode Kategori
+            </label>
+
+            <input
+                type="text"
+                name="code"
+                class="form-control"
+                value="{{ category.code|default:'' }}"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Nama Kategori
+            </label>
+
+            <input
+                type="text"
+                name="name"
+                class="form-control"
+                value="{{ category.name|default:'' }}"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Deskripsi
+            </label>
+
+            <textarea
+                name="description"
+                class="form-control"
+                rows="4"
+            >{{ category.description|default:'' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Simpan
+        </button>
+
+        <a href="{% url 'master_data:category_list' %}"
+           class="btn btn-secondary">
+            Kembali
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}
