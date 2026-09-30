@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>
+        {% if product %}
+        Edit Produk
+        {% else %}
+        Tambah Produk
+        {% endif %}
+    </h2>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">
+                SKU
+            </label>
+
+            <input type="text" name="sku" class="form-control" value="{{ product.sku|default:'' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Barcode
+            </label>
+
+            <input type="text" name="barcode" class="form-control" value="{{ product.barcode|default:'' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Nama Produk
+            </label>
+
+            <input type="text" name="name" class="form-control" value="{{ product.name|default:'' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Kategori</label>
+
+            <select name="category_id" class="form-select" required>
+                <option value="">-- Pilih Kategori --</option>
+
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if product.category_id==category.id %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Harga Beli
+            </label>
+
+            <input type="number" name="purchase_price" class="form-control" min="0" step="0.01"
+                value="{{ product.purchase_price|default:'0' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Harga Jual
+            </label>
+
+            <input type="number" name="selling_price" class="form-control" min="0" step="0.01"
+                value="{{ product.selling_price|default:'0' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Stok
+            </label>
+
+            <input type="number" name="stock" class="form-control" min="0" value="{{ product.stock|default:'0' }}"
+                required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Simpan
+        </button>
+
+        <a href="{% url 'master_data:product_list' %}" class="btn btn-secondary">
+            Kembali
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

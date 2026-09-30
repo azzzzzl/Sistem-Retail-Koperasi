@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Data Anggota</h2>
+
+        <a
+            href="{% url 'master_data:member_create' %}"
+            class="btn btn-primary"
+        >
+            Tambah Anggota
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="GET" class="row g-2 mb-3">
+
+        <div class="col-md-6">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Cari kode, nama, atau telepon..."
+                value="{{ search }}"
+            >
+        </div>
+
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+
+                <option value="">
+                    Semua Status
+                </option>
+
+                {% if status == "active" %}
+                    <option value="active" selected>
+                        Active
+                    </option>
+                {% else %}
+                    <option value="active">
+                        Active
+                    </option>
+                {% endif %}
+
+                {% if status == "inactive" %}
+                    <option value="inactive" selected>
+                        Inactive
+                    </option>
+                {% else %}
+                    <option value="inactive">
+                        Inactive
+                    </option>
+                {% endif %}
+
+            </select>
+        </div>
+
+        <div class="col-md-3">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Cari
+            </button>
+
+            <a
+                href="{% url 'master_data:member_list' %}"
+                class="btn btn-secondary"
+            >
+                Reset
+            </a>
+
+        </div>
+
+    </form>
+
+    <div class="table-responsive">
+
+        <table class="table table-bordered table-striped">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>Telepon</th>
+                    <th>Email</th>
+                    <th>Alamat</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for member in members %}
+
+                <tr>
+
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ member.member_code }}</td>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.phone|default:"-" }}</td>
+                    <td>{{ member.email|default:"-" }}</td>
+                    <td>{{ member.address|default:"-" }}</td>
+                    <td>{{ member.status }}</td>
+
+                    <td>
+
+                        <a
+                            href="{% url 'master_data:member_update' member_id=member.id %}"
+                            class="btn btn-sm btn-warning"
+                        >
+                            Edit
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="{% url 'master_data:member_delete' member_id=member.id %}"
+                            style="display:inline;"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Hapus anggota ini?');"
+                            >
+                                Hapus
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="8" class="text-center">
+                        Belum ada data anggota.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
