@@ -14,4 +14,5 @@ staticfiles/
 .vscode/
 .idea/
 
-*.log
+*.log.DS_Store
+**/.DS_Store
