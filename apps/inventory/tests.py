@@ -12,6 +12,7 @@ from apps.inventory.invoice_services import SupplierInvoiceService
 from unittest.mock import MagicMock, patch
 
 
+
 # ============================================================
 # STOCK MOVEMENT
 # ============================================================
@@ -23,9 +24,18 @@ class StockMovementServiceTestCase(TestCase):
 
         self.service.repository = MagicMock()
 
-    def test_create_stock_in(self):
-        self.service.repository.get_stock_balance.return_value = 0
+        # Mock product dari collection products
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 10,
+        }
 
+        # Mock hasil update stock
+        self.service.repository.update_product_stock.return_value = (
+            MagicMock(matched_count=1)
+        )
+
+    def test_create_stock_in(self):
         self.service.repository.create.side_effect = (
             lambda data: data
         )
@@ -55,12 +65,30 @@ class StockMovementServiceTestCase(TestCase):
         )
 
         self.assertEqual(
+            movement["beforeStock"],
+            10,
+        )
+
+        self.assertEqual(
+            movement["afterStock"],
+            20,
+        )
+
+        self.assertEqual(
             movement["referenceType"],
             "GOODS_RECEIPT",
         )
 
+        self.service.repository.update_product_stock.assert_called_once_with(
+            "TEST-PRODUCT-001",
+            20,
+        )
+
     def test_create_stock_out(self):
-        self.service.repository.get_stock_balance.return_value = 10
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 10,
+        }
 
         self.service.repository.create.side_effect = (
             lambda data: data
@@ -85,8 +113,26 @@ class StockMovementServiceTestCase(TestCase):
             4,
         )
 
+        self.assertEqual(
+            movement["beforeStock"],
+            10,
+        )
+
+        self.assertEqual(
+            movement["afterStock"],
+            6,
+        )
+
+        self.service.repository.update_product_stock.assert_called_once_with(
+            "TEST-PRODUCT-001",
+            6,
+        )
+
     def test_stock_out_cannot_exceed_stock(self):
-        self.service.repository.get_stock_balance.return_value = 5
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 5,
+        }
 
         with self.assertRaises(ValueError):
             self.service.create_movement(
@@ -96,8 +142,13 @@ class StockMovementServiceTestCase(TestCase):
                 reference_type="SALE",
             )
 
+        self.service.repository.update_product_stock.assert_not_called()
+
     def test_quantity_must_be_positive(self):
-        self.service.repository.get_stock_balance.return_value = 0
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 10,
+        }
 
         with self.assertRaises(ValueError):
             self.service.create_movement(
@@ -117,6 +168,11 @@ class StockMovementServiceTestCase(TestCase):
             )
 
     def test_invalid_movement_type(self):
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 10,
+        }
+
         with self.assertRaises(ValueError):
             self.service.create_movement(
                 product_id="TEST-PRODUCT-001",
@@ -126,7 +182,10 @@ class StockMovementServiceTestCase(TestCase):
             )
 
     def test_stock_adjustment(self):
-        self.service.repository.get_stock_balance.return_value = 5
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 5,
+        }
 
         self.service.repository.create.side_effect = (
             lambda data: data
@@ -152,8 +211,26 @@ class StockMovementServiceTestCase(TestCase):
             3,
         )
 
+        self.assertEqual(
+            movement["beforeStock"],
+            5,
+        )
+
+        self.assertEqual(
+            movement["afterStock"],
+            8,
+        )
+
+        self.service.repository.update_product_stock.assert_called_once_with(
+            "TEST-PRODUCT-001",
+            8,
+        )
+
     def test_stock_adjustment_cannot_make_negative_stock(self):
-        self.service.repository.get_stock_balance.return_value = 5
+        self.service.repository.get_product.return_value = {
+            "_id": "TEST-PRODUCT-001",
+            "stock": 5,
+        }
 
         with self.assertRaises(ValueError):
             self.service.create_movement(
@@ -164,6 +241,7 @@ class StockMovementServiceTestCase(TestCase):
                 reference_type="STOCK_ADJUSTMENT",
             )
 
+        self.service.repository.update_product_stock.assert_not_called()
 
 # ============================================================
 # STOCK OPNAME

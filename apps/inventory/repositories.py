@@ -1,46 +1,27 @@
 from datetime import datetime, timezone
 
+from bson import ObjectId
+
 from database.mongodb import db
 
 
 class StockMovementRepository:
-    """
-    Repository untuk mengelola data stock_movements di MongoDB.
-    """
-
     COLLECTION_NAME = "stock_movements"
 
     def __init__(self):
         self.collection = db[self.COLLECTION_NAME]
+        self.products = db["products"]
 
     def create(self, movement_data):
-        """
-        Menyimpan satu stock movement.
-        """
-
         result = self.collection.insert_one(movement_data)
-
-        return self.collection.find_one({
-            "_id": result.inserted_id
-        })
+        return self.collection.find_one({"_id": result.inserted_id})
 
     def find_all(self):
-        """
-        Mengambil seluruh stock movement.
-        Data terbaru ditampilkan lebih dahulu.
-        """
-
         return list(
             self.collection.find().sort("createdAt", -1)
         )
 
     def find_by_id(self, movement_id):
-        """
-        Mengambil stock movement berdasarkan ID.
-        """
-
-        from bson import ObjectId
-
         try:
             object_id = ObjectId(movement_id)
         except Exception:
@@ -51,10 +32,6 @@ class StockMovementRepository:
         })
 
     def find_by_product(self, product_id):
-        """
-        Mengambil seluruh movement berdasarkan productId.
-        """
-
         return list(
             self.collection.find({
                 "productId": product_id
@@ -62,14 +39,6 @@ class StockMovementRepository:
         )
 
     def get_stock_balance(self, product_id):
-        """
-        Menghitung stok berdasarkan seluruh stock movement.
-
-        IN  = menambah stok
-        OUT = mengurangi stok
-        ADJUSTMENT = mengikuti adjustmentQuantity
-        """
-
         movements = self.collection.find({
             "productId": product_id
         })
@@ -89,3 +58,49 @@ class StockMovementRepository:
                 balance += movement.get("adjustmentQuantity", 0)
 
         return balance
+
+    def get_product(self, product_id):
+        """
+        Mengambil product dari collection products.
+        product_id berasal dari sistem sebagai string,
+        kemudian dikonversi menjadi ObjectId untuk query MongoDB.
+        """
+        try:
+            object_id = ObjectId(product_id)
+        except Exception:
+            return None
+
+        return self.products.find_one({
+            "_id": object_id
+        })
+
+    def get_product_stock(self, product_id):
+        """
+        Mengambil stock aktual dari collection products.
+        """
+        product = self.get_product(product_id)
+
+        if not product:
+            return None
+
+        return product.get("stock", 0)
+
+    def update_product_stock(self, product_id, new_stock):
+        """
+        Mengubah stock pada collection products.
+        """
+        try:
+            object_id = ObjectId(product_id)
+        except Exception:
+            return None
+
+        return self.products.update_one(
+            {
+                "_id": object_id
+            },
+            {
+                "$set": {
+                    "stock": new_stock
+                }
+            }
+        )

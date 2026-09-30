@@ -37,7 +37,7 @@ class StockMovementService:
         adjustment_quantity=None,
     ):
         """
-        Membuat stock movement baru.
+        Membuat stock movement baru dan memperbarui products.stock.
         """
 
         # ==========================
@@ -46,6 +46,14 @@ class StockMovementService:
 
         if not product_id:
             raise ValueError("productId wajib diisi.")
+
+        # Pastikan product benar-benar ada
+        product = self.repository.get_product(product_id)
+
+        if not product:
+            raise ValueError(
+                f"Product dengan ID {product_id} tidak ditemukan."
+            )
 
         # ==========================
         # VALIDASI MOVEMENT TYPE
@@ -82,39 +90,43 @@ class StockMovementService:
             )
 
         # ==========================
-        # VALIDASI STOCK UNTUK OUT
+        # AMBIL STOCK AKTUAL
         # ==========================
 
-        current_stock = self.repository.get_stock_balance(product_id)
+        current_stock = product.get("stock", 0)
 
-        if movement_type == "OUT":
+        try:
+            current_stock = int(current_stock)
+        except (TypeError, ValueError):
+            raise ValueError(
+                "Stock produk harus berupa angka."
+            )
+
+        if current_stock < 0:
+            raise ValueError(
+                "Stock produk tidak boleh negatif."
+            )
+
+        # ==========================
+        # HITUNG STOCK BARU
+        # ==========================
+
+        if movement_type == "IN":
+
+            new_stock = current_stock + quantity
+
+        elif movement_type == "OUT":
+
             if quantity > current_stock:
                 raise ValueError(
                     f"Stok tidak mencukupi. "
                     f"Stok tersedia: {current_stock}."
                 )
 
-        # ==========================
-        # DATA MOVEMENT
-        # ==========================
+            new_stock = current_stock - quantity
 
-        movement_data = {
-            "productId": product_id,
-            "movementType": movement_type,
-            "quantity": quantity,
-            "referenceType": reference_type,
-            "referenceId": reference_id,
-            "notes": notes,
-            "createdBy": created_by,
-            "createdAt": datetime.now(timezone.utc),
-        }
-
-        # ==========================
-        # ADJUSTMENT
-        # ==========================
-
-        if movement_type == "ADJUSTMENT":
-
+        else:
+            # ADJUSTMENT
             if adjustment_quantity is None:
                 raise ValueError(
                     "adjustmentQuantity wajib diisi untuk adjustment."
@@ -134,13 +146,60 @@ class StockMovementService:
                     "Hasil adjustment tidak boleh membuat stok negatif."
                 )
 
+        # ==========================
+        # DATA MOVEMENT
+        # ==========================
+
+        movement_data = {
+            "productId": product_id,
+            "movementType": movement_type,
+            "quantity": quantity,
+            "beforeStock": current_stock,
+            "afterStock": new_stock,
+            "referenceType": reference_type,
+            "referenceId": reference_id,
+            "notes": notes,
+            "createdBy": created_by,
+            "createdAt": datetime.now(timezone.utc),
+        }
+
+        if movement_type == "ADJUSTMENT":
             movement_data["adjustmentQuantity"] = adjustment_quantity
 
         # ==========================
-        # SIMPAN
+        # UPDATE PRODUCT STOCK
         # ==========================
 
-        return self.repository.create(movement_data)
+        update_result = self.repository.update_product_stock(
+            product_id,
+            new_stock
+        )
+
+        if not update_result:
+            raise ValueError(
+                "Gagal memperbarui stok produk."
+            )
+
+        if update_result.matched_count == 0:
+            raise ValueError(
+                f"Product dengan ID {product_id} tidak ditemukan."
+            )
+
+        # ==========================
+        # SIMPAN STOCK MOVEMENT
+        # ==========================
+
+        try:
+            return self.repository.create(movement_data)
+
+        except Exception:
+            # Rollback stock jika movement gagal disimpan
+            self.repository.update_product_stock(
+                product_id,
+                current_stock
+            )
+
+            raise
 
     def get_all_movements(self):
         """
@@ -168,10 +227,17 @@ class StockMovementService:
 
     def get_current_stock(self, product_id):
         """
-        Mengambil saldo stok produk.
+        Mengambil saldo stok aktual dari products.stock.
         """
 
         if not product_id:
             raise ValueError("productId wajib diisi.")
 
-        return self.repository.get_stock_balance(product_id)
+        stock = self.repository.get_product_stock(product_id)
+
+        if stock is None:
+            raise ValueError(
+                f"Product dengan ID {product_id} tidak ditemukan."
+            )
+
+        return stock
