@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'apps.authentication',
     "apps.inventory",
     "apps.master_data",
-
+    "apps.pos",
 ]
 
 MIDDLEWARE = [
