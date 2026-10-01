@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>{{ title }}</h1><p class="muted">Supplier: {{ supplier.name }} ({{ supplier.code }})</p></div><a class="btn" href="{% url 'master_data:supplier_detail' supplier|mongo_id %}">Kembali ke Detail</a></div>
+<div class="card">
+{% if kind == "products" %}
+<table class="table"><tr><th>Produk</th><th>SKU</th><th>Kode Supplier</th><th>Harga Beli</th><th>Status</th></tr>{% for row in rows %}<tr><td>{{ row.product.name }}</td><td>{{ row.product.sku }}</td><td>{{ row.link.supplier_product_code }}</td><td>Rp {{ row.link.purchase_price|floatformat:0 }}</td><td>{{ row.link.status }}</td></tr>{% empty %}<tr><td colspan="5">Belum ada produk supplier.</td></tr>{% endfor %}</table>
+{% elif kind == "purchase_orders" %}
+<table class="table"><tr><th>Nomor PO</th><th>Tanggal</th><th>Total</th><th>Status</th></tr>{% for row in rows %}<tr><td>{{ row.poNumber }}</td><td>{{ row.orderDate|date:"d-m-Y H:i" }}</td><td>Rp {{ row.total|floatformat:0 }}</td><td>{{ row.status }}</td></tr>{% empty %}<tr><td colspan="4">Belum ada purchase order.</td></tr>{% endfor %}</table>
+{% elif kind == "invoices" %}
+<table class="table"><tr><th>Invoice</th><th>Tanggal</th><th>Jatuh Tempo</th><th>Total</th><th>Sisa</th><th>Status</th></tr>{% for row in rows %}<tr><td>{{ row.invoiceNumber }}</td><td>{{ row.invoiceDate|date:"d-m-Y H:i" }}</td><td>{{ row.dueDate|date:"d-m-Y" }}</td><td>Rp {{ row.total|floatformat:0 }}</td><td>Rp {{ row.remainingAmount|floatformat:0 }}</td><td>{{ row.status }}</td></tr>{% empty %}<tr><td colspan="6">Belum ada invoice.</td></tr>{% endfor %}</table>
+{% elif kind == "payments" %}
+<table class="table"><tr><th>Nomor</th><th>Invoice</th><th>Tanggal</th><th>Jumlah</th><th>Metode</th></tr>{% for row in rows %}<tr><td>{{ row.paymentNumber }}</td><td>{{ row.invoiceId }}</td><td>{{ row.paymentDate|date:"d-m-Y H:i" }}</td><td>Rp {{ row.amount|floatformat:0 }}</td><td>{{ row.paymentMethod }}</td></tr>{% empty %}<tr><td colspan="5">Belum ada pembayaran.</td></tr>{% endfor %}</table>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Pengeluaran{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Pengeluaran</h1><p class="muted">Catat dan pantau biaya operasional toko.</p></div><a class="btn primary" href="{% url 'finance:expense_create' %}">+ Tambah Pengeluaran</a></div>
+<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Jumlah</th><th>Metode</th><th>Aksi</th></tr></thead><tbody>{% for e in expenses %}<tr><td>{{ e.expenseNumber }}</td><td>{{ e.date|date:"d/m/Y" }}</td><td>{{ e.category }}</td><td>{{ e.description|default:"-" }}</td><td>Rp {{ e.amount|floatformat:0 }}</td><td>{{ e.paymentMethod }}</td><td><a class="btn small" href="{% url 'finance:expense_detail' e.id %}">Detail</a> <a class="btn small" href="{% url 'finance:expense_edit' e.id %}">Edit</a></td></tr>{% empty %}<tr><td colspan="7">Belum ada pengeluaran.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

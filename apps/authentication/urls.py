@@ -3,9 +3,9 @@ from . import views
 
 
 urlpatterns = [
+    path("dashboard/", views.dashboard_view, name="dashboard"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
-    path("dashboard/", views.dashboard_view, name="dashboard"),
     path("admin-test/", views.admin_test_view, name="admin_test"),
     path(
         "user-management-test/",
@@ -22,6 +22,5 @@ urlpatterns = [
     path("users/<str:user_id>/status/", views.user_status_view, name="user_status"),
     path("users/<str:user_id>/reset-password/", views.user_reset_password_view, name="user_reset_password"),
     path("users/<str:user_id>/role/", views.user_role_view, name="user_role"),
-    path("dashboard/", views.dashboard_view, name="dashboard"),
     path("procurement-test/", views.procurement_test_view, name="procurement_test"),
 ]

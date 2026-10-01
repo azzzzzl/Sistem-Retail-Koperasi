@@ -1,0 +1,1011 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan Supplier{% endblock %}
+
+{% block content %}
+
+{% include "reports/_nav.html" %}
+
+<style>
+    .supplier-report-page {
+        padding-bottom: 30px;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .supplier-report-header {
+        margin-bottom: 24px;
+    }
+
+    .supplier-report-header h1 {
+        font-weight: 700;
+        color: #171717;
+        margin-bottom: 6px;
+    }
+
+    .supplier-report-header p {
+        color: #6b7280;
+        margin: 0;
+    }
+
+    /* =========================
+       FILTER
+    ========================= */
+
+    .supplier-filter-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .supplier-filter-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .supplier-filter-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #b91c1c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .supplier-filter-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .supplier-filter-body {
+        padding: 20px;
+    }
+
+    .supplier-filter-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 7px;
+    }
+
+    .supplier-filter-input,
+    .supplier-filter-select {
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        font-size: 14px;
+        padding: 8px 12px;
+        transition: all .2s ease;
+    }
+
+    .supplier-filter-input:focus,
+    .supplier-filter-select:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
+
+    .supplier-filter-button {
+        min-height: 42px;
+        border: none;
+        border-radius: 9px;
+        background: #b91c1c;
+        color: #fff;
+        font-weight: 600;
+        padding: 8px 22px;
+        transition: all .2s ease;
+    }
+
+    .supplier-filter-button:hover {
+        background: #991b1b;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    /* =========================
+       EXPORT
+    ========================= */
+
+    .supplier-action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin: 20px 0;
+    }
+
+    .supplier-action-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .supplier-export-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .supplier-export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 14px;
+        border-radius: 9px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all .2s ease;
+    }
+
+    .supplier-export-btn:hover {
+        border-color: #b91c1c;
+        color: #b91c1c;
+        background: #fef2f2;
+    }
+
+    /* =========================
+       SUPPLIER CARD
+    ========================= */
+
+    .supplier-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .supplier-card-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    .supplier-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+    .supplier-name-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .supplier-icon {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: #fef2f2;
+        color: #b91c1c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .supplier-name {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .supplier-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 3px;
+    }
+
+    /* =========================
+       SUPPLIER SUMMARY
+    ========================= */
+
+    .supplier-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .supplier-summary-item {
+        padding: 14px 16px;
+        background: #fafafa;
+        border-right: 1px solid #e5e7eb;
+    }
+
+    .supplier-summary-item:last-child {
+        border-right: none;
+    }
+
+    .supplier-summary-label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    .supplier-summary-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #171717;
+        white-space: nowrap;
+    }
+
+    .supplier-summary-value.debt {
+        color: #b91c1c;
+    }
+
+    /* =========================
+       CONTENT
+    ========================= */
+
+    .supplier-card-body {
+        padding: 20px;
+    }
+
+    .supplier-section {
+        min-width: 0;
+    }
+
+    .supplier-section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 13px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .supplier-section-title i {
+        color: #b91c1c;
+    }
+
+    /* =========================
+       TABLE
+    ========================= */
+
+    .supplier-table-wrapper {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .supplier-table {
+        width: 100%;
+        min-width: 480px;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+    .supplier-table thead th {
+        background: #f9fafb;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        padding: 11px 13px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .supplier-table tbody td {
+        padding: 12px 13px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #374151;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .supplier-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .supplier-table tbody tr:hover {
+        background: #fafafa;
+    }
+
+    .supplier-number {
+        font-weight: 600;
+        color: #171717;
+    }
+
+    .supplier-date {
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    .supplier-amount {
+        font-weight: 600;
+        color: #171717;
+        white-space: nowrap;
+    }
+
+    .supplier-outstanding {
+        font-weight: 700;
+        color: #b91c1c;
+        white-space: nowrap;
+    }
+
+    .supplier-method {
+        display: inline-flex;
+        padding: 5px 9px;
+        border-radius: 7px;
+        background: #f3f4f6;
+        color: #4b5563;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* =========================
+       EMPTY STATE
+    ========================= */
+
+    .supplier-empty {
+        padding: 35px 20px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .supplier-empty-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        background: #fef2f2;
+        color: #b91c1c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .supplier-empty strong {
+        display: block;
+        color: #374151;
+        margin-bottom: 4px;
+    }
+
+    .supplier-empty span {
+        font-size: 13px;
+    }
+
+    .supplier-global-empty {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 992px) {
+
+        .supplier-summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .supplier-summary-item:nth-child(2) {
+            border-right: none;
+        }
+
+        .supplier-summary-item:nth-child(-n+2) {
+            border-bottom: 1px solid #e5e7eb;
+        }
+    }
+
+    @media (max-width: 768px) {
+
+        .supplier-action-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .supplier-export-buttons {
+            width: 100%;
+        }
+
+        .supplier-export-btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .supplier-title-row {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 576px) {
+
+        .supplier-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .supplier-summary-item {
+            border-right: none;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .supplier-summary-item:last-child {
+            border-bottom: none;
+        }
+    }
+</style>
+
+
+<div class="container-fluid supplier-report-page">
+
+    <!-- HEADER -->
+    <div class="supplier-report-header">
+
+        <h1>Laporan Supplier</h1>
+
+        <p>
+            Pantau pembelian, invoice, hutang, dan riwayat pembayaran setiap supplier.
+        </p>
+
+    </div>
+
+
+    <!-- FILTER -->
+    <div class="supplier-filter-card">
+
+        <div class="supplier-filter-header">
+
+            <div class="supplier-filter-icon">
+                <i class="bi bi-funnel"></i>
+            </div>
+
+            <h2 class="supplier-filter-title">
+                Filter Laporan
+            </h2>
+
+        </div>
+
+
+        <div class="supplier-filter-body">
+
+            <form method="get">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Supplier -->
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <label class="supplier-filter-label">
+                            Supplier
+                        </label>
+
+                        <select
+                            name="supplier_id"
+                            class="form-select supplier-filter-select"
+                        >
+
+                            <option value="">
+                                Semua Supplier
+                            </option>
+
+                            {% for s in suppliers %}
+
+                                <option
+                                    value="{{ s.id }}"
+                                    {% if filters.supplier_id == s.id %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ s.name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Mulai -->
+                    <div class="col-12 col-md-6 col-xl-3">
+
+                        <label class="supplier-filter-label">
+                            Mulai
+                        </label>
+
+                        <input
+                            type="date"
+                            name="start_date"
+                            value="{{ filters.start_date }}"
+                            class="form-control supplier-filter-input"
+                        >
+
+                    </div>
+
+
+                    <!-- Sampai -->
+                    <div class="col-12 col-md-6 col-xl-3">
+
+                        <label class="supplier-filter-label">
+                            Sampai
+                        </label>
+
+                        <input
+                            type="date"
+                            name="end_date"
+                            value="{{ filters.end_date }}"
+                            class="form-control supplier-filter-input"
+                        >
+
+                    </div>
+
+
+                    <!-- Button -->
+                    <div class="col-12 col-md-6 col-xl-2">
+
+                        <button
+                            type="submit"
+                            class="btn supplier-filter-button w-100"
+                        >
+                            <i class="bi bi-funnel me-1"></i>
+                            Filter
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- EXPORT -->
+    <div class="supplier-action-bar">
+
+        <p class="supplier-action-title">
+            Ringkasan Supplier
+        </p>
+
+        <div class="supplier-export-buttons">
+
+            <a
+                class="supplier-export-btn"
+                href="{% url 'reports:export' 'suppliers' 'xlsx' %}?{{ request.GET.urlencode }}"
+            >
+                <i class="bi bi-file-earmark-excel"></i>
+                Export Excel
+            </a>
+
+            <a
+                class="supplier-export-btn"
+                href="{% url 'reports:export' 'suppliers' 'pdf' %}?{{ request.GET.urlencode }}"
+            >
+                <i class="bi bi-file-earmark-pdf"></i>
+                Export PDF
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- SUPPLIER LIST -->
+    {% for row in report.data %}
+
+        <div class="supplier-card">
+
+            <!-- SUPPLIER HEADER -->
+            <div class="supplier-card-header">
+
+                <div class="supplier-title-row">
+
+                    <div class="supplier-name-wrapper">
+
+                        <div class="supplier-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+
+                        <div>
+
+                            <h2 class="supplier-name">
+                                {{ row.supplier.name }}
+                            </h2>
+
+                            <div class="supplier-label">
+                                Ringkasan aktivitas supplier
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SUMMARY -->
+                <div class="supplier-summary-grid">
+
+                    <!-- Pembelian -->
+                    <div class="supplier-summary-item">
+
+                        <div class="supplier-summary-label">
+                            Pembelian
+                        </div>
+
+                        <div class="supplier-summary-value">
+                            {{ row.purchaseCount }} transaksi
+                        </div>
+
+                    </div>
+
+
+                    <!-- Total Pembelian -->
+                    <div class="supplier-summary-item">
+
+                        <div class="supplier-summary-label">
+                            Total Pembelian
+                        </div>
+
+                        <div class="supplier-summary-value">
+                            Rp {{ row.purchaseTotal|floatformat:0 }}
+                        </div>
+
+                    </div>
+
+
+                    <!-- Hutang Periode -->
+                    <div class="supplier-summary-item">
+
+                        <div class="supplier-summary-label">
+                            Hutang Periode
+                        </div>
+
+                        <div class="supplier-summary-value debt">
+                            Rp {{ row.outstanding|floatformat:0 }}
+                        </div>
+
+                    </div>
+
+
+                    <!-- Hutang Saat Ini -->
+                    <div class="supplier-summary-item">
+
+                        <div class="supplier-summary-label">
+                            Hutang Saat Ini
+                        </div>
+
+                        <div class="supplier-summary-value debt">
+                            Rp {{ row.currentOutstanding|floatformat:0 }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUPPLIER BODY -->
+            <div class="supplier-card-body">
+
+                <!-- PURCHASE + INVOICE -->
+                <div class="row g-4">
+
+                    <!-- RIWAYAT PEMBELIAN -->
+                    <div class="col-12 col-xl-6">
+
+                        <div class="supplier-section">
+
+                            <h3 class="supplier-section-title">
+                                <i class="bi bi-cart-check"></i>
+                                Riwayat Pembelian
+                            </h3>
+
+                            <div class="supplier-table-wrapper">
+
+                                <table class="supplier-table">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Nomor</th>
+                                            <th>Tanggal</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for x in row.purchases %}
+
+                                            <tr>
+
+                                                <td>
+                                                    <span class="supplier-number">
+                                                        {{ x.purchaseNumber }}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="supplier-date">
+                                                        {{ x.purchaseDate }}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="supplier-amount">
+                                                        Rp {{ x.total|floatformat:0 }}
+                                                    </span>
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+                                                <td colspan="3">
+
+                                                    <div class="supplier-empty">
+
+                                                        <div class="supplier-empty-icon">
+                                                            <i class="bi bi-cart-x"></i>
+                                                        </div>
+
+                                                        <strong>
+                                                            Tidak ada pembelian
+                                                        </strong>
+
+                                                        <span>
+                                                            Belum ada riwayat pembelian supplier.
+                                                        </span>
+
+                                                    </div>
+
+                                                </td>
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- INVOICE & HUTANG -->
+                    <div class="col-12 col-xl-6">
+
+                        <div class="supplier-section">
+
+                            <h3 class="supplier-section-title">
+                                <i class="bi bi-receipt"></i>
+                                Invoice & Hutang
+                            </h3>
+
+                            <div class="supplier-table-wrapper">
+
+                                <table class="supplier-table">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Nomor</th>
+                                            <th>Total</th>
+                                            <th>Sisa</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for x in row.invoices %}
+
+                                            <tr>
+
+                                                <td>
+                                                    <span class="supplier-number">
+                                                        {{ x.invoiceNumber }}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="supplier-amount">
+                                                        Rp {{ x.total|floatformat:0 }}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="supplier-outstanding">
+                                                        Rp {{ x.remainingAmount|floatformat:0 }}
+                                                    </span>
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+                                                <td colspan="3">
+
+                                                    <div class="supplier-empty">
+
+                                                        <div class="supplier-empty-icon">
+                                                            <i class="bi bi-receipt"></i>
+                                                        </div>
+
+                                                        <strong>
+                                                            Tidak ada invoice
+                                                        </strong>
+
+                                                        <span>
+                                                            Belum ada invoice untuk supplier ini.
+                                                        </span>
+
+                                                    </div>
+
+                                                </td>
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PAYMENT HISTORY -->
+                <div class="supplier-section mt-4">
+
+                    <h3 class="supplier-section-title">
+                        <i class="bi bi-cash-stack"></i>
+                        Riwayat Pembayaran
+                    </h3>
+
+                    <div class="supplier-table-wrapper">
+
+                        <table class="supplier-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Nomor</th>
+                                    <th>Jumlah</th>
+                                    <th>Tanggal</th>
+                                    <th>Metode</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for x in row.payments %}
+
+                                    <tr>
+
+                                        <td>
+                                            <span class="supplier-number">
+                                                {{ x.paymentNumber }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="supplier-amount">
+                                                Rp {{ x.amount|floatformat:0 }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="supplier-date">
+                                                {{ x.paymentDate }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="supplier-method">
+                                                {{ x.paymentMethod }}
+                                            </span>
+                                        </td>
+
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+                                        <td colspan="4">
+
+                                            <div class="supplier-empty">
+
+                                                <div class="supplier-empty-icon">
+                                                    <i class="bi bi-wallet2"></i>
+                                                </div>
+
+                                                <strong>
+                                                    Tidak ada pembayaran
+                                                </strong>
+
+                                                <span>
+                                                    Belum ada riwayat pembayaran supplier.
+                                                </span>
+
+                                            </div>
+
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <!-- GLOBAL EMPTY STATE -->
+        <div class="supplier-global-empty">
+
+            <div class="supplier-empty">
+
+                <div class="supplier-empty-icon">
+                    <i class="bi bi-building-x"></i>
+                </div>
+
+                <strong>
+                    Tidak ada supplier
+                </strong>
+
+                <span>
+                    Tidak ditemukan data supplier berdasarkan filter yang dipilih.
+                </span>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

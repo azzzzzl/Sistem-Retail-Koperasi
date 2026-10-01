@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Audit Log
+{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/audit.css' %}">
+
+<div class="audit-page">
+
+    <!-- =========================
+         PAGE HEADER
+         ========================= -->
+    <div class="audit-page-header">
+
+        <div class="audit-page-heading">
+
+            <div class="audit-page-eyebrow">
+                SYSTEM MONITORING
+            </div>
+
+            <h1 class="audit-page-title">
+                Audit Log
+            </h1>
+
+            <p class="audit-page-description">
+                Pantau aktivitas pengguna dan perubahan data yang terjadi
+                di dalam sistem KOPERA.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         FILTER CARD
+         ========================= -->
+    <div class="audit-card audit-filter-card">
+
+        <div class="audit-card-header">
+
+            <div>
+
+                <h2 class="audit-card-title">
+                    Filter Aktivitas
+                </h2>
+
+                <p class="audit-card-description">
+                    Gunakan filter untuk menemukan aktivitas tertentu
+                    berdasarkan waktu, action, module, atau pengguna.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="get" class="audit-filter-form">
+
+            <div class="audit-filter-grid">
+
+                <!-- START DATE -->
+                <div class="audit-form-group">
+
+                    <label for="start_date">
+                        Mulai
+                    </label>
+
+                    <input
+                        id="start_date"
+                        type="date"
+                        name="start_date"
+                        value="{{ filters.start_date }}"
+                    >
+
+                </div>
+
+
+                <!-- END DATE -->
+                <div class="audit-form-group">
+
+                    <label for="end_date">
+                        Sampai
+                    </label>
+
+                    <input
+                        id="end_date"
+                        type="date"
+                        name="end_date"
+                        value="{{ filters.end_date }}"
+                    >
+
+                </div>
+
+
+                <!-- ACTION -->
+                <div class="audit-form-group">
+
+                    <label for="action">
+                        Action
+                    </label>
+
+                    <input
+                        id="action"
+                        type="text"
+                        name="action"
+                        value="{{ filters.action }}"
+                        placeholder="CREATE / UPDATE / LOGIN"
+                    >
+
+                </div>
+
+
+                <!-- MODULE -->
+                <div class="audit-form-group">
+
+                    <label for="module">
+                        Module
+                    </label>
+
+                    <input
+                        id="module"
+                        type="text"
+                        name="module"
+                        value="{{ filters.module }}"
+                        placeholder="Authentication / Products"
+                    >
+
+                </div>
+
+
+                <!-- USER ID -->
+                <div class="audit-form-group">
+
+                    <label for="user_id">
+                        User ID
+                    </label>
+
+                    <input
+                        id="user_id"
+                        type="text"
+                        name="user_id"
+                        value="{{ filters.user_id }}"
+                        placeholder="ID pengguna"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- FILTER ACTION -->
+            <div class="audit-filter-actions">
+
+                <button
+                    type="submit"
+                    class="audit-btn audit-btn-primary"
+                >
+                    <span>🔎</span>
+                    Filter
+                </button>
+
+                <a
+                    href="{% url 'reports:audit_logs' %}"
+                    class="audit-btn audit-btn-secondary"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =========================
+         AUDIT LOG TABLE
+         ========================= -->
+    <div class="audit-card">
+
+        <div class="audit-card-header">
+
+            <div>
+
+                <h2 class="audit-card-title">
+                    Riwayat Aktivitas
+                </h2>
+
+                <p class="audit-card-description">
+                    Daftar aktivitas pengguna yang tercatat oleh sistem.
+                </p>
+
+            </div>
+
+
+            <!-- RESULT COUNT -->
+            <div class="audit-result-count">
+
+                {% if report.data %}
+                    {{ report.data|length }} aktivitas
+                {% else %}
+                    0 aktivitas
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             TABLE
+             ========================= -->
+        <div class="audit-table-wrapper">
+
+            <table class="audit-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Waktu
+                        </th>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                        <th>
+                            Module
+                        </th>
+
+                        <th>
+                            Referensi
+                        </th>
+
+                        <th>
+                            Deskripsi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for row in report.data %}
+
+                        <tr>
+
+                            <!-- =====================
+                                 TIME
+                                 ===================== -->
+                            <td>
+
+                                <div class="audit-time">
+                                    {{ row.createdAt|default:"-" }}
+                                </div>
+
+                            </td>
+
+
+                            <!-- =====================
+                                 USER
+                                 ===================== -->
+                            <td>
+
+                                <div class="audit-user">
+
+                                    <div class="audit-user-avatar">
+                                        {{ row.username|default:row.userId|slice:":1"|upper }}
+                                    </div>
+
+                                    <div class="audit-user-info">
+
+                                        <strong>
+                                            {{ row.username|default:row.userId|default:"-" }}
+                                        </strong>
+
+                                        {% if row.userId %}
+
+                                            <span>
+                                                ID: {{ row.userId }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- =====================
+                                 ROLE
+                                 ===================== -->
+                            <td>
+
+                                {% if row.role %}
+
+                                    <span class="audit-role-badge">
+                                        {{ row.role|title }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="audit-muted">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =====================
+                                 ACTION
+                                 ===================== -->
+                            <td>
+
+                                {% if row.action == "CREATE" %}
+
+                                    <span class="audit-action audit-action-create">
+                                        CREATE
+                                    </span>
+
+                                {% elif row.action == "UPDATE" %}
+
+                                    <span class="audit-action audit-action-update">
+                                        UPDATE
+                                    </span>
+
+                                {% elif row.action == "DELETE" %}
+
+                                    <span class="audit-action audit-action-delete">
+                                        DELETE
+                                    </span>
+
+                                {% elif row.action == "LOGIN" %}
+
+                                    <span class="audit-action audit-action-login">
+                                        LOGIN
+                                    </span>
+
+                                {% elif row.action == "LOGOUT" %}
+
+                                    <span class="audit-action audit-action-logout">
+                                        LOGOUT
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="audit-action audit-action-default">
+                                        {{ row.action|default:"-" }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =====================
+                                 MODULE
+                                 ===================== -->
+                            <td>
+
+                                <span class="audit-module">
+                                    {{ row.module|default:"-" }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- =====================
+                                 REFERENCE
+                                 ===================== -->
+                            <td>
+
+                                <span class="audit-reference">
+                                    {{ row.referenceId|default:"-" }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- =====================
+                                 DESCRIPTION
+                                 ===================== -->
+                            <td>
+
+                                <div class="audit-description">
+                                    {{ row.description|default:"-" }}
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+
+                    {% empty %}
+
+                        <!-- =====================
+                             EMPTY STATE
+                             ===================== -->
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="audit-empty-cell"
+                            >
+
+                                <div class="audit-empty">
+
+                                    <div class="audit-empty-icon">
+                                        ◷
+                                    </div>
+
+                                    <h3>
+                                        Belum Ada Audit Log
+                                    </h3>
+
+                                    <p>
+                                        Belum terdapat aktivitas yang tercatat
+                                        pada filter yang dipilih.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

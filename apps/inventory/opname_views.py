@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 
 from bson import ObjectId
@@ -42,6 +43,7 @@ def serialize_document(document):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def stock_opname_list(request):
     try:
         opnames = (
@@ -67,6 +69,7 @@ def stock_opname_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("inventory")
 def stock_opname_create(request):
     try:
         body = json.loads(request.body)
@@ -121,6 +124,7 @@ def stock_opname_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def stock_opname_detail(
     request,
     opname_id,
@@ -154,6 +158,7 @@ def stock_opname_detail(
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("inventory")
 def stock_opname_submit(
     request,
     opname_id,
@@ -188,6 +193,7 @@ def stock_opname_submit(
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("inventory")
 def stock_opname_approve(
     request,
     opname_id,

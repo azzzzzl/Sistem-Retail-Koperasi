@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Produk - KOPERA{% endblock %}
+
+{% block content %}
+
+<!-- =========================================================
+     PAGE HEADER
+========================================================= -->
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+            <span>Master Data</span>
+            <span class="breadcrumb-separator">/</span>
+            <span>Produk</span>
+            <span class="breadcrumb-separator">/</span>
+            <span>Detail</span>
+        </div>
+
+        <div class="detail-title-row">
+
+            <div class="product-detail-avatar">
+                {{ product.name|slice:":1"|upper }}
+            </div>
+
+            <div>
+
+                <h1>{{ product.name }}</h1>
+
+                <div class="detail-meta">
+
+                    <span class="code-badge">
+                        SKU {{ product.sku }}
+                    </span>
+
+                    {% if product.status == "ACTIVE" or product.status == "active" %}
+
+                        <span class="status-badge status-active">
+                            <span class="status-dot"></span>
+                            Aktif
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-badge status-inactive">
+                            <span class="status-dot"></span>
+                            Tidak Aktif
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="page-header-actions">
+
+        <a
+            class="btn btn-secondary"
+            href="{% url 'master_data:product_list' %}"
+        >
+            ← Kembali
+        </a>
+
+        <a
+            class="btn btn-primary"
+            href="{% url 'master_data:product_update' product.product_id %}"
+        >
+            Edit Produk
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PRODUCT SUMMARY
+========================================================= -->
+
+<div class="stats-grid">
+
+    <!-- HARGA BELI -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon stat-icon-primary">
+            Rp
+        </div>
+
+        <div class="stat-content">
+
+            <span class="stat-label">
+                Harga Beli
+            </span>
+
+            <strong class="stat-value stat-value-small">
+                Rp {{ product.purchase_price|floatformat:0 }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- HARGA JUAL -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon stat-icon-success">
+            Rp
+        </div>
+
+        <div class="stat-content">
+
+            <span class="stat-label">
+                Harga Jual
+            </span>
+
+            <strong class="stat-value stat-value-small">
+                Rp {{ product.selling_price|floatformat:0 }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- STOK -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon stat-icon-warning">
+            #
+        </div>
+
+        <div class="stat-content">
+
+            <span class="stat-label">
+                Stok Saat Ini
+            </span>
+
+            <strong class="stat-value">
+                {{ product.stock|default:0 }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- MINIMUM STOCK -->
+
+    <div class="stat-card">
+
+        <div class="stat-icon stat-icon-danger">
+            !
+        </div>
+
+        <div class="stat-content">
+
+            <span class="stat-label">
+                Minimum Stok
+            </span>
+
+            <strong class="stat-value">
+                {{ product.minimumStock|default:0 }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PRODUCT INFORMATION
+========================================================= -->
+
+<div class="detail-grid">
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2 class="card-title">
+                    Informasi Produk
+                </h2>
+
+                <p class="card-subtitle">
+                    Informasi dasar produk yang tersimpan dalam sistem.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Nama Produk
+                </span>
+
+                <strong class="detail-value">
+                    {{ product.name }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    SKU
+                </span>
+
+                <strong class="detail-value">
+                    {{ product.sku|default:"-" }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Barcode
+                </span>
+
+                <span class="detail-value">
+                    {{ product.barcode|default:"-" }}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Kategori
+                </span>
+
+                <span class="detail-value">
+
+                    {% if product.category_name %}
+                        {{ product.category_name }}
+
+                    {% elif product.category %}
+                        {{ product.category }}
+
+                    {% else %}
+                        -
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Harga Beli
+                </span>
+
+                <span class="detail-value">
+                    Rp {{ product.purchase_price|floatformat:0 }}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Harga Jual
+                </span>
+
+                <span class="detail-value">
+                    Rp {{ product.selling_price|floatformat:0 }}
+                </span>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Status
+                </span>
+
+                <span class="detail-value">
+
+                    {% if product.status == "ACTIVE" or product.status == "active" %}
+
+                        <span class="status-badge status-active">
+                            <span class="status-dot"></span>
+                            Aktif
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-badge status-inactive">
+                            <span class="status-dot"></span>
+                            Tidak Aktif
+                        </span>
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- STOCK STATUS -->
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2 class="card-title">
+                    Status Persediaan
+                </h2>
+
+                <p class="card-subtitle">
+                    Kondisi stok produk saat ini.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stock-overview">
+
+            <div class="stock-main">
+
+                <span class="stock-main-label">
+                    Stok Saat Ini
+                </span>
+
+                <strong class="stock-main-value">
+                    {{ product.stock|default:0 }}
+                </strong>
+
+                <span class="stock-main-unit">
+                    unit
+                </span>
+
+            </div>
+
+
+            {% if product.stock <= 0 %}
+
+                <div class="stock-alert stock-alert-danger">
+
+                    <strong>
+                        Stok habis
+                    </strong>
+
+                    <span>
+                        Produk tidak memiliki stok yang tersedia.
+                    </span>
+
+                </div>
+
+            {% elif product.stock <= product.minimumStock %}
+
+                <div class="stock-alert stock-alert-warning">
+
+                    <strong>
+                        Stok rendah
+                    </strong>
+
+                    <span>
+                        Stok sudah berada di bawah atau sama dengan batas minimum.
+                    </span>
+
+                </div>
+
+            {% else %}
+
+                <div class="stock-alert stock-alert-success">
+
+                    <strong>
+                        Stok aman
+                    </strong>
+
+                    <span>
+                        Jumlah stok masih berada di atas batas minimum.
+                    </span>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="stock-minimum">
+
+                <span>
+                    Minimum stok
+                </span>
+
+                <strong>
+                    {{ product.minimumStock|default:0 }} unit
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     STOCK MOVEMENT
+========================================================= -->
+
+<div class="card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2 class="card-title">
+                Riwayat Stock Movement
+            </h2>
+
+            <p class="card-subtitle">
+                Riwayat perubahan jumlah stok produk.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Waktu</th>
+
+                    <th>Jenis</th>
+
+                    <th>Quantity</th>
+
+                    <th>Stok Sebelum</th>
+
+                    <th>Stok Sesudah</th>
+
+                    <th>Referensi</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for m in movements %}
+
+                <tr>
+
+                    <td>
+
+                        <span class="date-text">
+                            {{ m.createdAt|date:"d M Y, H:i" }}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        {% if m.movementType == "IN" or m.movementType == "PURCHASE" %}
+
+                            <span class="movement-badge movement-in">
+                                + Masuk
+                            </span>
+
+                        {% elif m.movementType == "OUT" or m.movementType == "SALE" %}
+
+                            <span class="movement-badge movement-out">
+                                − Keluar
+                            </span>
+
+                        {% else %}
+
+                            <span class="movement-badge movement-adjustment">
+                                Penyesuaian
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ m.quantity }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="stock-number">
+                            {{ m.beforeStock }}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <strong class="stock-number">
+                            {{ m.afterStock }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="reference-cell">
+
+                            <strong>
+                                {{ m.referenceType|default:"-" }}
+                            </strong>
+
+                            {% if m.referenceId %}
+
+                                <span>
+                                    {{ m.referenceId }}
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6">
+
+                        <div class="empty-state compact">
+
+                            <div class="empty-icon">
+                                ↕
+                            </div>
+
+                            <h3>
+                                Belum ada stock movement
+                            </h3>
+
+                            <p>
+                                Belum terdapat riwayat perubahan stok untuk produk ini.
+                            </p>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BOTTOM ACTION
+========================================================= -->
+
+<div class="detail-footer">
+
+    <a
+        class="btn btn-secondary"
+        href="{% url 'master_data:product_list' %}"
+    >
+        ← Kembali ke Produk
+    </a>
+
+    <a
+        class="btn btn-primary"
+        href="{% url 'master_data:product_update' product.product_id %}"
+    >
+        Edit Produk
+    </a>
+
+</div>
+
+
+{% endblock %}

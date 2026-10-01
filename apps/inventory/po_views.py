@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 
 from bson import ObjectId
@@ -45,6 +46,7 @@ def serialize_document(document):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def purchase_order_list(request):
     try:
         purchase_orders = (
@@ -70,6 +72,7 @@ def purchase_order_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("procurement")
 def purchase_order_create(request):
     try:
         body = json.loads(request.body)
@@ -146,6 +149,7 @@ def purchase_order_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def purchase_order_detail(
     request,
     po_id,
@@ -179,6 +183,7 @@ def purchase_order_detail(
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("procurement")
 def purchase_order_submit(
     request,
     po_id,
@@ -214,6 +219,7 @@ def purchase_order_submit(
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("procurement")
 def purchase_order_cancel(
     request,
     po_id,
@@ -248,6 +254,7 @@ def purchase_order_cancel(
         }, status=500)
 
 @require_http_methods(["POST"])
+@permission_required_custom("procurement")
 def purchase_order_approve(
     request,
     po_id,

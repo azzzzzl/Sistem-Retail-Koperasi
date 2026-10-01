@@ -1,87 +1,471 @@
 {% extends "base.html" %}
 
+{% block title %}Riwayat Retur Penjualan{% endblock %}
+
 {% block content %}
 
-<div class="container">
+<style>
+    .returns-history-page {
+        padding-bottom: 30px;
+    }
 
-    <h1>Riwayat Retur Penjualan</h1>
+    .returns-header {
+        margin-bottom: 24px;
+    }
 
+    .returns-header h1 {
+        margin: 0 0 5px;
+        color: #171717;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .returns-header p {
+        margin: 0;
+        color: #667085;
+        font-size: 14px;
+    }
+
+    /* Alert */
+    .returns-alert {
+        margin-bottom: 20px;
+        padding: 12px 15px;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 13px;
+    }
+
+    /* Main Card */
+    .returns-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(20, 20, 20, 0.05);
+        overflow: hidden;
+    }
+
+    .returns-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .returns-card-header h2 {
+        margin: 0;
+        color: #171717;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .returns-count {
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    /* Table */
+    .returns-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .returns-table {
+        width: 100%;
+        min-width: 1000px;
+        border-collapse: collapse;
+    }
+
+    .returns-table th {
+        padding: 13px 14px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #475467;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .returns-table td {
+        padding: 14px;
+        border-bottom: 1px solid #f0f1f3;
+        color: #344054;
+        font-size: 13px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .returns-table tbody tr {
+        transition: .15s ease;
+    }
+
+    .returns-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .returns-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .number-column {
+        width: 45px;
+        text-align: center !important;
+    }
+
+    .return-number {
+        color: #b91c1c;
+        font-weight: 700;
+    }
+
+    .return-id {
+        color: #98a2b3;
+        font-family: monospace;
+        font-size: 11px;
+    }
+
+    .invoice-number {
+        color: #475467;
+        font-weight: 600;
+    }
+
+    .date-cell {
+        color: #667085;
+    }
+
+    .money {
+        white-space: nowrap;
+    }
+
+    .refund-amount {
+        color: #16a34a !important;
+        font-weight: 700;
+    }
+
+    .total-return {
+        color: #171717 !important;
+        font-weight: 700;
+    }
+
+    /* Status */
+    .status-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fffbeb;
+        color: #b45309;
+    }
+
+    .status-rejected {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    /* Approve Button */
+    .approve-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 6px 11px;
+        margin-left: 3px;
+        border: 0;
+        border-radius: 7px;
+        background: #16a34a;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .approve-btn:hover {
+        background: #15803d;
+    }
+
+    /* Empty */
+    .returns-empty {
+        padding: 60px 20px;
+        text-align: center;
+        color: #667085;
+    }
+
+    .empty-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 25px;
+    }
+
+    .returns-empty strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #344054;
+        font-size: 15px;
+    }
+
+    .returns-empty span {
+        font-size: 13px;
+    }
+
+    /* Bottom Action */
+    .returns-actions {
+        margin-top: 20px;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 9px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        background: #fff;
+        color: #344054;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .back-btn:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        color: #171717;
+    }
+
+    @media (max-width: 600px) {
+        .returns-header h1 {
+            font-size: 24px;
+        }
+
+        .returns-card-header {
+            padding: 16px;
+        }
+
+        .returns-actions {
+            width: 100%;
+        }
+
+        .back-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div class="returns-history-page">
+
+    <!-- HEADER -->
+    <div class="returns-header">
+        <h1>Riwayat Retur Penjualan</h1>
+        <p>Daftar pengajuan dan proses retur dari transaksi penjualan.</p>
+    </div>
+
+
+    <!-- MESSAGES -->
     {% if messages %}
         {% for message in messages %}
-            <div>
+            <div class="returns-alert">
                 {{ message }}
             </div>
         {% endfor %}
     {% endif %}
 
-    <hr>
 
-    {% if returns %}
+    <!-- RETURNS -->
+    <section class="returns-card">
 
-        <table border="1" cellpadding="8" cellspacing="0">
+        <div class="returns-card-header">
 
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>ID Retur</th>
-                    <th>No. Invoice</th>
-                    <th>Tanggal Retur</th>
-                    <th>Total Retur</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
+            <h2>Daftar Retur</h2>
 
-            <tbody>
+            {% if returns %}
+                <span class="returns-count">
+                    {{ returns|length }} Retur
+                </span>
+            {% endif %}
 
-                {% for return_data in returns %}
+        </div>
 
-                    <tr>
 
-                        <td>
-                            {{ forloop.counter }}
-                        </td>
+        {% if returns %}
 
-                        <td>
-                            {{ return_data.return_id }}
-                        </td>
+            <div class="returns-table-wrap">
 
-                        <td>
-                            {{ return_data.invoiceNumber }}
-                        </td>
+                <table class="returns-table">
 
-                        <td>
-                            {{ return_data.returnDate|date:"d-m-Y H:i" }}
-                        </td>
+                    <thead>
+                        <tr>
+                            <th class="number-column">No</th>
+                            <th>No. Retur</th>
+                            <th>ID Retur</th>
+                            <th>No. Invoice</th>
+                            <th>Tanggal Retur</th>
+                            <th>Refund</th>
+                            <th>Total Retur</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
 
-                        <td>
-                            Rp {{ return_data.total|floatformat:0 }}
-                        </td>
 
-                        <td>
-                            {{ return_data.status }}
-                        </td>
+                    <tbody>
 
-                    </tr>
+                        {% for return_data in returns %}
 
-                {% endfor %}
+                        <tr>
 
-            </tbody>
+                            <td class="number-column">
+                                {{ forloop.counter }}
+                            </td>
 
-        </table>
 
-    {% else %}
+                            <td>
+                                <span class="return-number">
+                                    {{ return_data.returnNumber }}
+                                </span>
+                            </td>
 
-        <p>
-            Belum ada data retur penjualan.
-        </p>
 
-    {% endif %}
+                            <td>
+                                <span class="return-id">
+                                    {{ return_data.return_id }}
+                                </span>
+                            </td>
 
-    <br>
 
-    <a href="{% url 'sales_history' %}">
-        Kembali ke Riwayat Penjualan
-    </a>
+                            <td>
+                                <span class="invoice-number">
+                                    {{ return_data.invoiceNumber }}
+                                </span>
+                            </td>
+
+
+                            <td class="date-cell">
+                                {{ return_data.returnDate|date:"d-m-Y H:i" }}
+                            </td>
+
+
+                            <td class="money refund-amount">
+                                Rp {{ return_data.refundAmount|floatformat:0 }}
+                            </td>
+
+
+                            <td class="money total-return">
+                                Rp {{ return_data.total|floatformat:0 }}
+                            </td>
+
+
+                            <td>
+
+                                <div class="status-cell">
+
+                                    <span class="
+                                        status-badge
+                                        {% if return_data.status == 'PENDING' %}
+                                            status-pending
+                                        {% elif return_data.status == 'REJECTED' %}
+                                            status-rejected
+                                        {% endif %}
+                                    ">
+                                        {{ return_data.status }}
+                                    </span>
+
+
+                                    {% if return_data.status == 'PENDING' %}
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'sales_return_approve' return_data.return_id %}"
+                                        >
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="approve-btn"
+                                            >
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="returns-empty">
+
+                <div class="empty-icon">
+                    ↩
+                </div>
+
+                <strong>Belum ada data retur penjualan</strong>
+
+                <span>
+                    Pengajuan retur penjualan akan muncul di halaman ini.
+                </span>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ACTION -->
+    <div class="returns-actions">
+
+        <a
+            href="{% url 'sales_history' %}"
+            class="back-btn"
+        >
+            ← Kembali ke Riwayat Penjualan
+        </a>
+
+    </div>
 
 </div>
 

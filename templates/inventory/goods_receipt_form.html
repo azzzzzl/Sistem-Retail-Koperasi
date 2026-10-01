@@ -1,0 +1,823 @@
+{% extends "base.html" %}
+
+{% block title %}Buat Goods Receipt{% endblock %}
+
+{% block content %}
+
+<!-- Bootstrap 5 -->
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+
+<style>
+    /* =========================================================
+       GOODS RECEIPT PAGE
+    ========================================================= */
+
+    .gr-page {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* ---------------------------------------------------------
+       PAGE HEADER
+    --------------------------------------------------------- */
+
+    .gr-page-header {
+        margin-bottom: 28px;
+    }
+
+    .gr-eyebrow {
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .gr-title {
+        color: #101828;
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .gr-subtitle {
+        color: #667085;
+        font-size: 14px;
+        margin: 0;
+    }
+
+
+    /* ---------------------------------------------------------
+       MAIN CARD
+    --------------------------------------------------------- */
+
+    .gr-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(16, 24, 40, .06);
+        overflow: hidden;
+    }
+
+    .gr-card-header {
+        padding: 24px 28px;
+        border-bottom: 1px solid #eaecf0;
+        background: linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #fffafa 100%
+        );
+    }
+
+    .gr-card-title {
+        color: #101828;
+        font-size: 17px;
+        font-weight: 800;
+        margin: 0 0 5px;
+    }
+
+    .gr-card-description {
+        color: #667085;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .gr-card-body {
+        padding: 28px;
+    }
+
+
+    /* ---------------------------------------------------------
+       SECTION
+    --------------------------------------------------------- */
+
+    .gr-section {
+        margin-bottom: 30px;
+    }
+
+    .gr-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .gr-section-title {
+        color: #101828;
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .gr-section-description {
+        color: #667085;
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+
+
+    /* ---------------------------------------------------------
+       FORM
+    --------------------------------------------------------- */
+
+    .gr-label {
+        color: #344054;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .gr-required {
+        color: #dc2626;
+    }
+
+    .gr-input,
+    .gr-select,
+    .gr-textarea {
+        border: 1px solid #d0d5dd !important;
+        border-radius: 10px !important;
+        background-color: #ffffff !important;
+        color: #101828 !important;
+        font-size: 14px !important;
+        box-shadow: none !important;
+        transition: all .2s ease;
+    }
+
+    .gr-input,
+    .gr-select {
+        min-height: 46px;
+    }
+
+    .gr-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .gr-input:focus,
+    .gr-select:focus,
+    .gr-textarea:focus {
+        border-color: #b91c1c !important;
+        box-shadow: 0 0 0 4px rgba(185, 28, 28, .10) !important;
+    }
+
+
+    /* ---------------------------------------------------------
+       PO INFORMATION
+    --------------------------------------------------------- */
+
+    .gr-info-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 15px;
+        margin-top: 18px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #991b1b;
+        font-size: 13px;
+    }
+
+    .gr-info-icon {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #b91c1c;
+        color: #ffffff;
+        font-weight: 800;
+    }
+
+
+    /* ---------------------------------------------------------
+       TABLE
+    --------------------------------------------------------- */
+
+    .gr-table-container {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .gr-table {
+        margin: 0 !important;
+    }
+
+    .gr-table thead th {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #667085;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .05em;
+        padding: 14px 16px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .gr-table tbody td {
+        padding: 15px 16px;
+        border-bottom: 1px solid #f0f2f5;
+        color: #344054;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .gr-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .gr-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+
+    /* Product */
+    .gr-product-name {
+        color: #101828;
+        font-weight: 700;
+        margin-bottom: 3px;
+    }
+
+    .gr-product-label {
+        color: #98a2b3;
+        font-size: 12px;
+    }
+
+
+    /* Ordered badge */
+    .gr-ordered {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 45px;
+        padding: 6px 10px;
+        border-radius: 7px;
+        background: #f2f4f7;
+        color: #475467;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+
+    /* Quantity inputs */
+    .gr-qty-input {
+        width: 100%;
+        min-width: 110px;
+        height: 40px;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        padding: 8px 10px;
+        color: #101828;
+        font-size: 13px;
+        outline: none;
+        transition: all .2s ease;
+    }
+
+    .gr-qty-input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
+
+
+    /* ---------------------------------------------------------
+       NOTES
+    --------------------------------------------------------- */
+
+    .gr-notes-card {
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fafafa;
+    }
+
+    .gr-notes-title {
+        color: #101828;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 16px;
+    }
+
+
+    /* ---------------------------------------------------------
+       ACTION
+    --------------------------------------------------------- */
+
+    .gr-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 24px;
+        margin-top: 26px;
+        border-top: 1px solid #eaecf0;
+    }
+
+    .gr-btn-save {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 175px;
+        min-height: 44px;
+        padding: 10px 20px;
+        border: 0;
+        border-radius: 9px;
+        background: #b91c1c;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(185, 28, 28, .20);
+        transition: all .2s ease;
+    }
+
+    .gr-btn-save:hover {
+        background: #991b1b;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 18px rgba(185, 28, 28, .25);
+    }
+
+    .gr-btn-save:active {
+        transform: translateY(0);
+    }
+
+
+    /* ---------------------------------------------------------
+       EMPTY STATE
+    --------------------------------------------------------- */
+
+    .gr-empty {
+        padding: 45px 20px !important;
+        text-align: center;
+    }
+
+    .gr-empty-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .gr-empty-title {
+        color: #101828;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .gr-empty-text {
+        color: #667085;
+        font-size: 13px;
+        margin: 0;
+    }
+
+
+    /* ---------------------------------------------------------
+       RESPONSIVE
+    --------------------------------------------------------- */
+
+    @media (max-width: 768px) {
+
+        .gr-title {
+            font-size: 24px;
+        }
+
+        .gr-card-header,
+        .gr-card-body {
+            padding: 20px;
+        }
+
+        .gr-actions {
+            flex-direction: column;
+        }
+
+        .gr-btn-save {
+            width: 100%;
+        }
+
+        .gr-table-container {
+            overflow-x: auto;
+        }
+
+    }
+</style>
+
+
+<div class="gr-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <div class="gr-page-header">
+
+        <div class="gr-eyebrow">
+            Pembelian
+        </div>
+
+        <h1 class="gr-title">
+            Buat Goods Receipt
+        </h1>
+
+        <p class="gr-subtitle">
+            Catat penerimaan barang berdasarkan Purchase Order yang dipilih.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         MESSAGES
+    ====================================================== -->
+
+    {% include "components/messages.html" %}
+
+
+    <!-- =====================================================
+         MAIN CARD
+    ====================================================== -->
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="gr-card">
+
+
+            <!-- =================================================
+                 CARD HEADER
+            ================================================== -->
+
+            <div class="gr-card-header">
+
+                <h2 class="gr-card-title">
+                    Informasi Penerimaan
+                </h2>
+
+                <p class="gr-card-description">
+                    Pilih Purchase Order dan lengkapi informasi penerimaan barang.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 CARD BODY
+            ================================================== -->
+
+            <div class="gr-card-body">
+
+
+                <!-- =================================================
+                     INFORMASI RECEIPT
+                ================================================== -->
+
+                <div class="gr-section">
+
+                    <div class="row g-4">
+
+                        <!-- PO -->
+                        <div class="col-12 col-lg-8">
+
+                            <label
+                                for="po_id"
+                                class="form-label gr-label"
+                            >
+                                Purchase Order
+                                <span class="gr-required">*</span>
+                            </label>
+
+                            <select
+                                id="po_id"
+                                name="po_id"
+                                class="form-select gr-select"
+                                onchange="this.form.submit()"
+                                required
+                            >
+
+                                <option value="">
+                                    Pilih PO
+                                </option>
+
+                                {% for p in pos %}
+
+                                    <option
+                                        value="{{ p|mongo_id }}"
+                                        {% if po and po|mongo_id == p|mongo_id %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ p.poNumber }} - {{ p.supplierId }} ({{ p.status }})
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Nomor Receipt -->
+                        <div class="col-12 col-lg-4">
+
+                            <label
+                                for="receipt_number"
+                                class="form-label gr-label"
+                            >
+                                Nomor Receipt
+                                <span class="gr-required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="receipt_number"
+                                name="receipt_number"
+                                class="form-control gr-input"
+                                placeholder="Contoh: GR-2026-001"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- Tanggal -->
+                        <div class="col-12 col-lg-4">
+
+                            <label
+                                for="receipt_date"
+                                class="form-label gr-label"
+                            >
+                                Tanggal Penerimaan
+                            </label>
+
+                            <input
+                                type="date"
+                                id="receipt_date"
+                                name="receipt_date"
+                                class="form-control gr-input"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    {% if po %}
+
+                        <div class="gr-info-box">
+
+                            <div class="gr-info-icon">
+                                ✓
+                            </div>
+
+                            <div>
+                                <strong>PO dipilih.</strong>
+                                Silakan isi jumlah barang yang diterima, diterima dengan baik,
+                                dan ditolak.
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if po %}
+
+                    <!-- =================================================
+                         PRODUCT RECEIPT
+                    ================================================== -->
+
+                    <div class="gr-section">
+
+                        <div class="gr-section-title">
+                            Detail Barang Diterima
+                        </div>
+
+                        <div class="gr-section-description">
+                            Masukkan jumlah barang sesuai kondisi saat penerimaan.
+                        </div>
+
+
+                        <div class="gr-table-container">
+
+                            <div class="table-responsive">
+
+                                <table class="table table-hover align-middle gr-table">
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th style="width: 32%;">
+                                                Produk
+                                            </th>
+
+                                            <th
+                                                style="width: 15%;"
+                                                class="text-center"
+                                            >
+                                                Ordered
+                                            </th>
+
+                                            <th style="width: 18%;">
+                                                Received
+                                            </th>
+
+                                            <th style="width: 18%;">
+                                                Accepted
+                                            </th>
+
+                                            <th style="width: 17%;">
+                                                Rejected
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        {% for i in po.items %}
+
+                                            <tr>
+
+                                                <!-- Produk -->
+                                                <td>
+
+                                                    <div class="gr-product-name">
+                                                        {{ i.name }}
+                                                    </div>
+
+                                                    <div class="gr-product-label">
+                                                        Item Purchase Order
+                                                    </div>
+
+                                                </td>
+
+
+                                                <!-- Ordered -->
+                                                <td class="text-center">
+
+                                                    <span class="gr-ordered">
+                                                        {{ i.quantity }}
+                                                    </span>
+
+                                                </td>
+
+
+                                                <!-- Received -->
+                                                <td>
+
+                                                    <input
+                                                        type="number"
+                                                        name="received_{{ forloop.counter0 }}"
+                                                        min="0"
+                                                        class="gr-qty-input"
+                                                        placeholder="0"
+                                                    >
+
+                                                </td>
+
+
+                                                <!-- Accepted -->
+                                                <td>
+
+                                                    <input
+                                                        type="number"
+                                                        name="accepted_{{ forloop.counter0 }}"
+                                                        min="0"
+                                                        class="gr-qty-input"
+                                                        placeholder="0"
+                                                    >
+
+                                                </td>
+
+
+                                                <!-- Rejected -->
+                                                <td>
+
+                                                    <input
+                                                        type="number"
+                                                        name="rejected_{{ forloop.counter0 }}"
+                                                        min="0"
+                                                        class="gr-qty-input"
+                                                        placeholder="0"
+                                                    >
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% empty %}
+
+                                            <tr>
+
+                                                <td
+                                                    colspan="5"
+                                                    class="gr-empty"
+                                                >
+
+                                                    <div class="gr-empty-icon">
+                                                        !
+                                                    </div>
+
+                                                    <div class="gr-empty-title">
+                                                        Tidak ada item produk
+                                                    </div>
+
+                                                    <p class="gr-empty-text">
+                                                        Purchase Order ini tidak memiliki item produk.
+                                                    </p>
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         NOTES
+                    ================================================== -->
+
+                    <div class="gr-section">
+
+                        <div class="gr-notes-card">
+
+                            <div class="gr-notes-title">
+                                Catatan Penerimaan
+                            </div>
+
+                            <label
+                                for="notes"
+                                class="form-label gr-label"
+                            >
+                                Catatan
+                            </label>
+
+                            <textarea
+                                id="notes"
+                                name="notes"
+                                class="form-control gr-textarea"
+                                placeholder="Tambahkan catatan mengenai kondisi barang, selisih jumlah, atau informasi lainnya..."
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         ACTION
+                    ================================================== -->
+
+                    <div class="gr-actions">
+
+                        <button
+                            type="submit"
+                            name="submit_receipt"
+                            value="1"
+                            class="gr-btn-save"
+                        >
+                            <span>✓</span>
+                            Simpan Penerimaan
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

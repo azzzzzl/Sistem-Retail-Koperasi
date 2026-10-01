@@ -1,133 +1,629 @@
 {% extends "base.html" %}
 
+{% block title %}Detail Transaksi Penjualan{% endblock %}
+
 {% block content %}
 
-<div class="container">
+<style>
+    .sale-detail-page {
+        padding-bottom: 30px;
+    }
 
-    <h1>Detail Transaksi Penjualan</h1>
+    .sale-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
 
+    .sale-header h1 {
+        margin: 0 0 5px;
+        color: #171717;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .sale-header p {
+        margin: 0;
+        color: #667085;
+        font-size: 14px;
+    }
+
+    .sale-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(20, 20, 20, 0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .sale-card-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sale-card-header h2 {
+        margin: 0;
+        color: #171717;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .sale-card-body {
+        padding: 22px;
+    }
+
+    /* Alert */
+    .sale-alert {
+        margin-bottom: 20px;
+        padding: 12px 15px;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 13px;
+    }
+
+    .sale-alert + .sale-alert {
+        margin-top: 8px;
+    }
+
+    /* Transaction Info */
+    .transaction-info {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .info-item {
+        padding: 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        background: #fafafa;
+    }
+
+    .info-label {
+        margin-bottom: 6px;
+        color: #667085;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .info-value {
+        color: #171717;
+        font-size: 14px;
+        font-weight: 700;
+        word-break: break-word;
+    }
+
+    .invoice-value {
+        color: #b91c1c;
+        font-size: 16px;
+    }
+
+    /* Status */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fee2e2;
+        color: #991b1b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* Table */
+    .sale-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .sale-table {
+        width: 100%;
+        min-width: 850px;
+        border-collapse: collapse;
+    }
+
+    .sale-table th {
+        padding: 13px 12px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #475467;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .sale-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #f0f1f3;
+        color: #344054;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .sale-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .sale-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .number-column {
+        width: 45px;
+        text-align: center !important;
+    }
+
+    .product-name {
+        color: #171717;
+        font-weight: 600;
+    }
+
+    .sku-code {
+        font-weight: 600;
+        color: #475467;
+    }
+
+    .barcode-code {
+        color: #667085;
+        font-family: monospace;
+        font-size: 12px;
+    }
+
+    .price-cell {
+        white-space: nowrap;
+    }
+
+    .quantity-cell {
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .subtotal-cell {
+        color: #171717 !important;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* Payment Summary */
+    .payment-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .payment-note {
+        color: #667085;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .payment-summary {
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 13px;
+        background: #fafafa;
+    }
+
+    .payment-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 9px 0;
+        color: #667085;
+        font-size: 13px;
+    }
+
+    .payment-row strong {
+        color: #171717;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .payment-total {
+        margin-top: 7px;
+        padding-top: 15px;
+        border-top: 1px dashed #d1d5db;
+        color: #171717;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .payment-total strong {
+        color: #b91c1c;
+        font-size: 20px;
+    }
+
+    .payment-change {
+        padding-top: 12px;
+        margin-top: 5px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .payment-change strong {
+        color: #16a34a;
+    }
+
+    /* Actions */
+    .sale-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .sale-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 9px 16px;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .sale-btn-primary {
+        background: #b91c1c;
+        color: #fff;
+    }
+
+    .sale-btn-primary:hover {
+        background: #991b1b;
+        color: #fff;
+    }
+
+    .sale-btn-secondary {
+        background: #fff;
+        border-color: #d1d5db;
+        color: #344054;
+    }
+
+    .sale-btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        color: #171717;
+    }
+
+    .sale-btn-danger {
+        background: #fff;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .sale-btn-danger:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #991b1b;
+    }
+
+    @media (max-width: 1000px) {
+        .transaction-info {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .payment-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .sale-header {
+            flex-direction: column;
+        }
+
+        .sale-header h1 {
+            font-size: 24px;
+        }
+
+        .sale-card-body {
+            padding: 16px;
+        }
+
+        .transaction-info {
+            grid-template-columns: 1fr;
+        }
+
+        .sale-actions {
+            flex-direction: column;
+        }
+
+        .sale-btn {
+            width: 100%;
+        }
+
+        .payment-summary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="sale-detail-page">
+
+    <!-- HEADER -->
+    <div class="sale-header">
+        <div>
+            <h1>Detail Transaksi Penjualan</h1>
+            <p>Informasi lengkap transaksi, produk, dan pembayaran.</p>
+        </div>
+    </div>
+
+
+    <!-- MESSAGES -->
     {% if messages %}
         {% for message in messages %}
-            <div>
+            <div class="sale-alert">
                 {{ message }}
             </div>
         {% endfor %}
     {% endif %}
 
-    <hr>
 
-    <h2>Informasi Transaksi</h2>
+    <!-- INFORMASI TRANSAKSI -->
+    <section class="sale-card">
 
-    <p>
-        <strong>No. Invoice:</strong>
-        {{ sale.invoiceNumber }}
-    </p>
+        <div class="sale-card-header">
+            <h2>Informasi Transaksi</h2>
+        </div>
 
-    <p>
-        <strong>Tanggal:</strong>
-        {{ sale.saleDate|date:"d-m-Y H:i" }}
-    </p>
+        <div class="sale-card-body">
 
-    <p>
-        <strong>Kasir:</strong>
-        {{ sale.cashierId }}
-    </p>
+            <div class="transaction-info">
 
-    <p>
-        <strong>Status:</strong>
-        {{ sale.status }}
-    </p>
+                <div class="info-item">
+                    <div class="info-label">
+                        No. Invoice
+                    </div>
 
-    <hr>
+                    <div class="info-value invoice-value">
+                        {{ sale.invoiceNumber }}
+                    </div>
+                </div>
 
-    <h2>Detail Produk</h2>
 
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>SKU</th>
-                <th>Barcode</th>
-                <th>Produk</th>
-                <th>Harga</th>
-                <th>Quantity</th>
-                <th>Diskon</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
+                <div class="info-item">
+                    <div class="info-label">
+                        Tanggal
+                    </div>
 
-        <tbody>
-            {% for item in sale.items %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ item.sku }}</td>
-                    <td>{{ item.barcode }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>
-                        Rp {{ item.sellingPrice|floatformat:0 }}
-                    </td>
-                    <td>{{ item.quantity }}</td>
-                    <td>
-                        Rp {{ item.discount|floatformat:0 }}
-                    </td>
-                    <td>
-                        Rp {{ item.subtotal|floatformat:0 }}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <div class="info-value">
+                        {{ sale.saleDate|date:"d-m-Y H:i" }}
+                    </div>
+                </div>
 
-    <hr>
 
-    <h2>Ringkasan Pembayaran</h2>
+                <div class="info-item">
+                    <div class="info-label">
+                        Kasir
+                    </div>
 
-    <p>
-        <strong>Subtotal:</strong>
-        Rp {{ sale.subtotal|floatformat:0 }}
-    </p>
+                    <div class="info-value">
+                        {{ sale.cashierId }}
+                    </div>
+                </div>
 
-    <p>
-        <strong>Diskon:</strong>
-        Rp {{ sale.discount|floatformat:0 }}
-    </p>
 
-    <p>
-        <strong>Pajak:</strong>
-        Rp {{ sale.tax|floatformat:0 }}
-    </p>
+                <div class="info-item">
+                    <div class="info-label">
+                        Status
+                    </div>
 
-    <p>
-        <strong>Total:</strong>
-        Rp {{ sale.total|floatformat:0 }}
-    </p>
+                    <div class="info-value">
+                        <span class="status-badge">
+                            {{ sale.status }}
+                        </span>
+                    </div>
+                </div>
 
-    <p>
-        <strong>Pembayaran:</strong>
-        Rp {{ sale.payment|floatformat:0 }}
-    </p>
+            </div>
 
-    <p>
-        <strong>Kembalian:</strong>
-        Rp {{ sale.change|floatformat:0 }}
-    </p>
+        </div>
 
-    <hr>
+    </section>
 
-    <a href="{% url 'sales_history' %}">
-        Kembali ke Riwayat Penjualan
-    </a>
 
-    |
+    <!-- DETAIL PRODUK -->
+    <section class="sale-card">
 
-    <a href="{% url 'pos_receipt' sale.sale_id %}">
-        Lihat Struk
-    </a>
+        <div class="sale-card-header">
+            <h2>Detail Produk</h2>
+        </div>
 
-    |
-    <a href="{% url 'sales_return' sale.sale_id %}">
-        Retur Penjualan
-    </a>
+        <div class="sale-card-body">
+
+            <div class="sale-table-wrap">
+
+                <table class="sale-table">
+
+                    <thead>
+                        <tr>
+                            <th class="number-column">No</th>
+                            <th>SKU</th>
+                            <th>Barcode</th>
+                            <th>Produk</th>
+                            <th>Harga</th>
+                            <th>Quantity</th>
+                            <th>Diskon</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in sale.items %}
+
+                        <tr>
+
+                            <td class="number-column">
+                                {{ forloop.counter }}
+                            </td>
+
+                            <td>
+                                <span class="sku-code">
+                                    {{ item.sku }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="barcode-code">
+                                    {{ item.barcode }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="product-name">
+                                    {{ item.name }}
+                                </span>
+                            </td>
+
+                            <td class="price-cell">
+                                Rp {{ item.sellingPrice|floatformat:0 }}
+                            </td>
+
+                            <td class="quantity-cell">
+                                {{ item.quantity }}
+                            </td>
+
+                            <td class="price-cell">
+                                Rp {{ item.discount|floatformat:0 }}
+                            </td>
+
+                            <td class="subtotal-cell">
+                                Rp {{ item.subtotal|floatformat:0 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" style="text-align:center; padding:35px;">
+                                Belum ada produk dalam transaksi.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- RINGKASAN PEMBAYARAN -->
+    <section class="sale-card">
+
+        <div class="sale-card-header">
+            <h2>Ringkasan Pembayaran</h2>
+        </div>
+
+        <div class="sale-card-body">
+
+            <div class="payment-layout">
+
+                <div class="payment-note">
+                    <p>
+                        Ringkasan berikut menampilkan perhitungan transaksi
+                        mulai dari subtotal produk, diskon, pajak, hingga
+                        pembayaran dan kembalian.
+                    </p>
+                </div>
+
+
+                <div class="payment-summary">
+
+                    <div class="payment-row">
+                        <span>Subtotal</span>
+                        <strong>
+                            Rp {{ sale.subtotal|floatformat:0 }}
+                        </strong>
+                    </div>
+
+                    <div class="payment-row">
+                        <span>Diskon</span>
+                        <strong>
+                            Rp {{ sale.discount|floatformat:0 }}
+                        </strong>
+                    </div>
+
+                    <div class="payment-row">
+                        <span>Pajak</span>
+                        <strong>
+                            Rp {{ sale.tax|floatformat:0 }}
+                        </strong>
+                    </div>
+
+                    <div class="payment-row payment-total">
+                        <span>Total</span>
+                        <strong>
+                            Rp {{ sale.total|floatformat:0 }}
+                        </strong>
+                    </div>
+
+                    <div class="payment-row">
+                        <span>Pembayaran</span>
+                        <strong>
+                            Rp {{ sale.payment|floatformat:0 }}
+                        </strong>
+                    </div>
+
+                    <div class="payment-row payment-change">
+                        <span>Kembalian</span>
+                        <strong>
+                            Rp {{ sale.change|floatformat:0 }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ACTIONS -->
+    <div class="sale-actions">
+
+        <a
+            href="{% url 'sales_history' %}"
+            class="sale-btn sale-btn-secondary"
+        >
+            ← Kembali ke Riwayat Penjualan
+        </a>
+
+        <a
+            href="{% url 'pos_receipt' sale.sale_id %}"
+            class="sale-btn sale-btn-primary"
+        >
+            Lihat Struk
+        </a>
+
+        <a
+            href="{% url 'sales_return' sale.sale_id %}"
+            class="sale-btn sale-btn-danger"
+        >
+            Retur Penjualan
+        </a>
+
+    </div>
 
 </div>
 

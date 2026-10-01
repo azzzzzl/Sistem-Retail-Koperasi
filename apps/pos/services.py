@@ -1,6 +1,10 @@
 from bson import ObjectId
 
+from .repositories import PosProductRepository
+
 class PosCartService:
+    def __init__(self, repository=None):
+        self.repository = repository or PosProductRepository()
 
     @staticmethod
     def get_cart(request):
@@ -22,6 +26,6 @@ class PosCartService:
         except Exception:
             return None
 
-        return self.products.find_one({
+        return self.repository.products.find_one({
             "_id": object_id
         })

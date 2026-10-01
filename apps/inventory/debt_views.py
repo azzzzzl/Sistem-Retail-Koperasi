@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 from datetime import date, datetime
 
@@ -35,6 +36,7 @@ def serialize_document(document):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_debt_detail(
     request,
     supplier_id,
@@ -73,6 +75,7 @@ def supplier_debt_detail(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_outstanding_invoices(
     request,
 ):

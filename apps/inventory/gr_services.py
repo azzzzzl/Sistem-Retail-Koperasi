@@ -38,8 +38,18 @@ class GoodsReceiptService:
     def _format_number(self, value):
         if value == value.to_integral_value():
             return int(value)
-
         return float(value)
+
+    def _parse_date(self, value, field_name):
+        if value is None or isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError(f"{field_name} harus berupa tanggal.")
+        try:
+            result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError(f"{field_name} memiliki format tanggal tidak valid.") from exc
+        return result if result.tzinfo else result.replace(tzinfo=timezone.utc)
 
     def _get_previous_received(self, po_id):
         receipts = self.repository.find_by_po_id(
@@ -254,12 +264,14 @@ class GoodsReceiptService:
                 PurchaseOrderService.STATUS_APPROVED
             )
 
-        self.po_repository.update(
+        updated = self.po_repository.update(
             po_id,
             {
                 "status": new_status,
             },
         )
+        if not updated:
+            raise RuntimeError("Status Purchase Order gagal diperbarui.")
 
     def create_goods_receipt(
         self,
@@ -315,10 +327,9 @@ class GoodsReceiptService:
             items,
         )
 
+        receipt_date = self._parse_date(receipt_date, "receiptDate")
         if receipt_date is None:
-            receipt_date = datetime.now(
-                timezone.utc
-            )
+            receipt_date = datetime.now(timezone.utc)
 
         now = datetime.now(timezone.utc)
 
@@ -339,36 +350,29 @@ class GoodsReceiptService:
             receipt_data
         )
 
+        movements = []
         try:
-            receipt_id = str(
-                receipt["_id"]
-            )
-
+            receipt_id = str(receipt["_id"])
             for item in processed_items:
-                accepted_quantity = item[
-                    "acceptedQuantity"
-                ]
-
+                accepted_quantity = item["acceptedQuantity"]
                 if accepted_quantity <= 0:
                     continue
-
-                self.stock_movement_service.create_movement(
+                movements.append(self.stock_movement_service.create_movement(
                     product_id=item["productId"],
                     movement_type="IN",
                     quantity=accepted_quantity,
                     reference_type="GOODS_RECEIPT",
                     reference_id=receipt_id,
-                    notes=(
-                        f"Penerimaan barang "
-                        f"{receipt_number}"
-                    ),
+                    notes=f"Penerimaan barang {receipt_number}",
                     created_by=received_by,
-                )
-
+                ))
         except Exception:
-            self.repository.delete(
-                receipt["_id"]
-            )
+            for movement in reversed(movements):
+                try:
+                    self.stock_movement_service.repository.rollback_movement(movement)
+                except Exception:
+                    pass
+            self.repository.delete(receipt["_id"])
             raise
 
         self._update_po_status(

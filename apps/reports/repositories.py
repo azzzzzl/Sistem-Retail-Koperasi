@@ -1,7 +1,3 @@
-from datetime import datetime, timezone
-
-from bson import ObjectId
-
 from database.mongodb import get_database
 
 
@@ -22,11 +18,11 @@ class ReportsRepository:
         self.stock_opnames = self.db["stock_opnames"]
         self.expenses = self.db["expenses"]
         self.audit_logs = self.db["audit_logs"]
+        self.returns = self.db["returns"]
+        self.purchase_returns = self.db["purchase_returns"]
 
     @staticmethod
     def _period(field, start, end):
-        if start is None and end is None:
-            return {}
         query = {}
         if start is not None:
             query[field] = {"$gte": start}
@@ -45,30 +41,19 @@ class ReportsRepository:
             cursor = cursor.limit(limit)
         return list(cursor)
 
-    def latest_stock_movements(self):
-        pipeline = [
-            {"$sort": {"productId": 1, "createdAt": -1}},
-            {"$group": {
-                "_id": "$productId",
-                "movement": {"$first": "$$ROOT"},
-            }},
-        ]
-        return list(self.stock_movements.aggregate(pipeline))
+    def find_first_available_period(self, collection, start, end, fields):
+        clauses = []
+        for field in fields:
+            clause = self._period(field, start, end)
+            if clause:
+                clauses.append(clause)
+        if not clauses:
+            return {}
+        return {"$or": clauses}
 
-    def aggregate_sales(self, query):
-        pipeline = [{"$match": query}] if query else []
-        pipeline.append({"$group": {
-            "_id": None,
-            "transactionCount": {"$sum": 1},
-            "total": {"$sum": {"$ifNull": ["$total", 0]}},
-        }})
-        return list(self.sales.aggregate(pipeline))
-
-    def aggregate_purchases(self, query):
-        pipeline = [{"$match": query}] if query else []
-        pipeline.append({"$group": {
-            "_id": None,
-            "transactionCount": {"$sum": 1},
-            "total": {"$sum": {"$ifNull": ["$total", 0]}},
-        }})
-        return list(self.purchases.aggregate(pipeline))
+    def recent_transactions(self, limit=10):
+        sales = [dict(x, kind="SALE") for x in self.sales.find().sort("saleDate", -1).limit(limit)]
+        purchases = [dict(x, kind="PURCHASE") for x in self.purchases.find().sort("purchaseDate", -1).limit(limit)]
+        rows = sales + purchases
+        rows.sort(key=lambda x: x.get("saleDate") or x.get("purchaseDate") or x.get("createdAt"), reverse=True)
+        return rows[:limit]

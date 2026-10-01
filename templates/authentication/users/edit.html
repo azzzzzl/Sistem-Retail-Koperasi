@@ -1,84 +1,284 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h1>Edit User</h1>
+<link rel="stylesheet" href="{% static 'css/users.css' %}">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="message">
-            {{ message }}
+<div class="user-page-header">
+
+    <div class="user-page-heading">
+
+        <div class="user-page-eyebrow">
+            USER MANAGEMENT
         </div>
-    {% endfor %}
+
+        <h1 class="user-page-title">
+            Edit User
+        </h1>
+
+        <p class="user-page-description">
+            Perbarui informasi akun dan pengaturan akses pengguna KOPERA.
+        </p>
+
+    </div>
+
+
+    <div class="user-page-actions">
+
+        <a
+            href="{% url 'user_detail' user_id=user.id %}"
+            class="user-btn user-btn-secondary"
+        >
+            ← Kembali
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- MESSAGES -->
+{% if messages %}
+
+    <div class="user-message-stack">
+
+        {% for message in messages %}
+
+            <div class="user-alert user-alert-info">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    </div>
+
 {% endif %}
 
-<form method="POST">
 
-    {% csrf_token %}
+<!-- FORM CARD -->
+<div class="user-form-card">
 
-    <div>
-        <label>Username</label>
+    <div class="user-form-header">
 
-        <input
-            type="text"
-            value="{{ user.username }}"
-            disabled
-        >
+        <div>
+
+            <h2 class="user-card-title">
+                Informasi User
+            </h2>
+
+            <p class="user-card-description">
+                Ubah data pengguna yang diperlukan.
+            </p>
+
+        </div>
+
     </div>
 
-    <div>
-        <label>Nama</label>
 
-        <input
-            type="text"
-            name="name"
-            value="{{ user.name }}"
-            required
-        >
-    </div>
+    <form method="POST">
 
-    <div>
-        <label>Email</label>
+        {% csrf_token %}
 
-        <input
-            type="email"
-            name="email"
-            value="{{ user.email }}"
-            required
-        >
-    </div>
 
-    <div>
-        <label>Role</label>
+        <div class="user-form-body">
 
-        <select name="role" required>
+            <!-- ACCOUNT INFORMATION -->
+            <div class="user-form-section">
 
-            {% for role in roles %}
+                <div class="user-form-section-header">
 
-                <option
-                    value="{{ role }}"
-                    {% if user.role == role %}
-                        selected
-                    {% endif %}
-                >
-                    {{ role }}
-                </option>
+                    <h3>
+                        Data Akun
+                    </h3>
 
-            {% endfor %}
+                    <p>
+                        Username digunakan sebagai identitas login pengguna.
+                    </p>
 
-        </select>
-    </div>
+                </div>
 
-    <button type="submit">
-        Simpan Perubahan
-    </button>
 
-</form>
+                <div class="user-form-grid">
 
-<p>
-    <a href="{% url 'user_detail' user_id=user.id %}">
-        Kembali
-    </a>
-</p>
+                    <!-- USERNAME -->
+                    <div class="user-form-group">
+
+                        <label for="username">
+                            Username
+                        </label>
+
+                        <input
+                            id="username"
+                            type="text"
+                            value="{{ user.username }}"
+                            disabled
+                        >
+
+                        <small>
+                            Username tidak dapat diubah.
+                        </small>
+
+                    </div>
+
+
+                    <!-- NAME -->
+                    <div class="user-form-group">
+
+                        <label for="name">
+                            Nama Lengkap
+                        </label>
+
+                        <input
+                            id="name"
+                            type="text"
+                            name="name"
+                            value="{{ user.name }}"
+                            placeholder="Masukkan nama lengkap"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+                    <div class="user-form-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value="{{ user.email }}"
+                            placeholder="contoh@email.com"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- ROLE -->
+                    <div class="user-form-group">
+
+                        <label for="role">
+                            Role
+                        </label>
+
+                        <select
+                            id="role"
+                            name="role"
+                            required
+                        >
+
+                            {% for role in roles %}
+
+                                <option
+                                    value="{{ role }}"
+                                    {% if user.role == role %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ role|title }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <small>
+                            Role menentukan hak akses pengguna di dalam sistem.
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACCOUNT STATUS -->
+            <div class="user-form-section">
+
+                <div class="user-form-section-header">
+
+                    <h3>
+                        Informasi Status
+                    </h3>
+
+                    <p>
+                        Status akun dapat dikelola dari halaman detail user.
+                    </p>
+
+                </div>
+
+
+                <div class="user-form-info-box">
+
+                    <div class="user-form-info-icon">
+                        {% if user.status == "active" %}
+                            ✓
+                        {% else %}
+                            !
+                        {% endif %}
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Status saat ini:
+                        </strong>
+
+                        {% if user.status == "active" %}
+
+                            <span class="user-status-badge user-status-active">
+                                <span class="user-status-dot"></span>
+                                Aktif
+                            </span>
+
+                        {% else %}
+
+                            <span class="user-status-badge user-status-inactive">
+                                <span class="user-status-dot"></span>
+                                Nonaktif
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FORM FOOTER -->
+        <div class="user-form-footer">
+
+            <a
+                href="{% url 'user_detail' user_id=user.id %}"
+                class="user-btn user-btn-secondary"
+            >
+                Batal
+            </a>
+
+
+            <button
+                type="submit"
+                class="user-btn user-btn-primary"
+            >
+                Simpan Perubahan
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
 
 {% endblock %}

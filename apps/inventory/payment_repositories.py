@@ -61,3 +61,11 @@ class SupplierPaymentRepository:
         )
 
         return self.collection.find_one({"_id": object_id})
+
+    def delete(self, payment_id):
+        from bson import ObjectId
+        try:
+            object_id = ObjectId(payment_id)
+        except Exception:
+            return None
+        return self.collection.delete_one({"_id": object_id})

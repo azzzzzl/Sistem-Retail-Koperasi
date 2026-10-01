@@ -5,6 +5,12 @@ from .invoice_repositories import SupplierInvoiceRepository
 from .purchase_repositories import PurchaseRepository
 
 
+def _normalize_datetime(value):
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    return value
+
+
 class SupplierInvoiceService:
     """
     Business logic Supplier Invoice.
@@ -60,9 +66,7 @@ class SupplierInvoiceService:
             )
 
         try:
-            return datetime.fromisoformat(
-                value.replace("Z", "+00:00")
-            )
+            return _normalize_datetime(datetime.fromisoformat(value.replace("Z", "+00:00")))
         except ValueError:
             raise ValueError(
                 f"{field_name} memiliki format tanggal tidak valid."
@@ -131,6 +135,10 @@ class SupplierInvoiceService:
             "subtotal",
         )
 
+        discount = self._to_number(
+            purchase.get("discount", 0),
+            "discount",
+        )
         tax = self._to_number(
             purchase.get("tax", 0),
             "tax",
@@ -141,9 +149,7 @@ class SupplierInvoiceService:
             "total",
         )
 
-        expected_total = (
-            subtotal + tax
-        )
+        expected_total = subtotal - discount + tax
 
         if total != expected_total:
             raise ValueError(
@@ -282,7 +288,7 @@ class SupplierInvoiceService:
         else:
             status = self.STATUS_PAID
 
-        return self.repository.update(
+        updated = self.repository.update(
             invoice_id,
             {
                 "paidAmount": self._format_number(
@@ -294,8 +300,32 @@ class SupplierInvoiceService:
                 "status": status,
             },
         )
+        purchase_id = invoice.get("purchaseId")
+        if purchase_id:
+            self.purchase_repository.update(purchase_id, {"paymentStatus": status})
+        return updated
+
+    def refresh_overdue_statuses(self):
+        now = datetime.now(timezone.utc)
+        changed = 0
+        for invoice in self.repository.find_all():
+            if invoice.get("status") == "PAID" or float(invoice.get("remainingAmount", 0)) <= 0:
+                continue
+            due = invoice.get("dueDate")
+            if isinstance(due, str):
+                try:
+                    due = datetime.fromisoformat(due.replace("Z", "+00:00"))
+                    if due.tzinfo is None:
+                        due = due.replace(tzinfo=timezone.utc)
+                except ValueError:
+                    continue
+            if isinstance(due, datetime) and due < now and invoice.get("status") != "OVERDUE":
+                self.repository.update(str(invoice["_id"]), {"status": "OVERDUE"})
+                changed += 1
+        return changed
 
     def get_outstanding_invoices(self):
+        self.refresh_overdue_statuses()
         invoices = self.repository.find_all()
 
         result = []

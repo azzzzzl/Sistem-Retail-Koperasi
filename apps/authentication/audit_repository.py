@@ -1,30 +1,18 @@
-from datetime import datetime, timezone
-
 from database.mongodb import get_database
+from datetime import datetime, timezone
 
 
 class AuditLogRepository:
     def __init__(self):
-        self.db = get_database()
-        self.collection = self.db["audit_logs"]
+        self.collection = get_database()["audit_logs"]
 
-        self.collection.create_index(
-            "createdAt"
-        )
-        self.collection.create_index(
-            "username"
-        )
-        self.collection.create_index(
-            "action"
-        )
+    def create(self, data):
+        result = self.collection.insert_one(data)
+        return self.collection.find_one({"_id": result.inserted_id})
 
-    def create(self, log_data):
-        return self.collection.insert_one(log_data)
-
-    def find_all(self):
+    def find_all(self, query=None, limit=200):
         return list(
-            self.collection.find().sort(
-                "createdAt",
-                -1
-            )
+            self.collection.find(query or {})
+            .sort("createdAt", -1)
+            .limit(limit)
         )

@@ -126,6 +126,8 @@ class MasterDataRepository:
                     "purchase_price": 1,
                     "selling_price": 1,
                     "stock": 1,
+                    "minimumStock": 1,
+                    "minimum_stock": 1,
                     "status": 1,
                 }
             ).sort("name", 1)
@@ -133,7 +135,10 @@ class MasterDataRepository:
 
         for product in products:
             product["id"] = str(product["_id"])
-
+            product["categoryId"] = product.get("categoryId", product.get("category_id"))
+            product["purchasePrice"] = product.get("purchasePrice", product.get("purchase_price", 0))
+            product["sellingPrice"] = product.get("sellingPrice", product.get("selling_price", 0))
+            product["minimumStock"] = product.get("minimumStock", product.get("minimum_stock", 0))
         return products
 
     def search_products(self, search="", status=""):
@@ -161,6 +166,8 @@ class MasterDataRepository:
                     "purchase_price": 1,
                     "selling_price": 1,
                     "stock": 1,
+                    "minimumStock": 1,
+                    "minimum_stock": 1,
                     "status": 1,
                 }
             ).sort("name", 1)
@@ -168,7 +175,10 @@ class MasterDataRepository:
 
         for product in products:
             product["id"] = str(product["_id"])
-
+            product["categoryId"] = product.get("categoryId", product.get("category_id"))
+            product["purchasePrice"] = product.get("purchasePrice", product.get("purchase_price", 0))
+            product["sellingPrice"] = product.get("sellingPrice", product.get("selling_price", 0))
+            product["minimumStock"] = product.get("minimumStock", product.get("minimum_stock", 0))
         return products
 
     def create_product(self, data):
@@ -234,7 +244,6 @@ class MasterDataRepository:
 
         for supplier in suppliers:
             supplier["id"] = str(supplier["_id"])
-
         return suppliers
 
 
@@ -268,7 +277,6 @@ class MasterDataRepository:
 
         for supplier in suppliers:
             supplier["id"] = str(supplier["_id"])
-
         return suppliers
 
 
@@ -387,7 +395,7 @@ class MasterDataRepository:
 
         for member in members:
             member["id"] = str(member["_id"])
-
+            member["memberCode"] = member.get("memberCode", member.get("member_code"))
         return members
 
 
@@ -421,7 +429,7 @@ class MasterDataRepository:
 
         for member in members:
             member["id"] = str(member["_id"])
-
+            member["memberCode"] = member.get("memberCode", member.get("member_code"))
         return members
 
 

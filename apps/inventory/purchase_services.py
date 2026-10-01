@@ -44,8 +44,18 @@ class PurchaseService:
     def _format_number(self, value):
         if value == value.to_integral_value():
             return int(value)
-
         return float(value)
+
+    def _parse_date(self, value, field_name):
+        if value is None or isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError(f"{field_name} harus berupa tanggal.")
+        try:
+            result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError(f"{field_name} memiliki format tanggal tidak valid.") from exc
+        return result if result.tzinfo else result.replace(tzinfo=timezone.utc)
 
     def _build_items_from_receipt(
         self,
@@ -202,10 +212,9 @@ class PurchaseService:
             + tax
         )
 
+        purchase_date = self._parse_date(purchase_date, "purchaseDate")
         if purchase_date is None:
-            purchase_date = datetime.now(
-                timezone.utc
-            )
+            purchase_date = datetime.now(timezone.utc)
 
         now = datetime.now(
             timezone.utc

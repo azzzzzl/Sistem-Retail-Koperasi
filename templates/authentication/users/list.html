@@ -1,70 +1,484 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/users.css' %}">
+{% endblock %}
 
 {% block content %}
 
-<h1>Manajemen User</h1>
+<div class="user-page">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="message">
-            {{ message }}
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="user-page-header">
+
+        <div class="user-page-heading">
+
+            <div class="user-page-eyebrow">
+                ADMINISTRATION
+            </div>
+
+            <h1 class="user-page-title">
+                Manajemen User
+            </h1>
+
+            <p class="user-page-description">
+                Kelola akun pengguna, role, dan status akses sistem KOPERA.
+            </p>
+
         </div>
-    {% endfor %}
-{% endif %}
 
-<p>
-    <a href="{% url 'user_create' %}">
-        Tambah User
-    </a>
-</p>
 
-<table border="1" cellpadding="8">
+        <div class="user-page-actions">
 
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Nama</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Aksi</th>
-        </tr>
-    </thead>
+            <a
+                href="{% url 'user_create' %}"
+                class="user-btn user-btn-primary"
+            >
+                <span>+</span>
+                Tambah User
+            </a>
 
-    <tbody>
+        </div>
 
-        {% for user in users %}
+    </div>
 
-        <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ user.status }}</td>
 
-            <td>
-                <a href="{% url 'user_detail' user_id=user.id %}">
-                    Detail
-                </a>
+    <!-- ==================== MESSAGES ==================== -->
+    {% if messages %}
 
-                <a href="{% url 'user_edit' user_id=user.id %}">
-                    Edit
-                </a>
-            </td>
-        </tr>
+        <div class="user-message-stack">
 
-        {% empty %}
+            {% for message in messages %}
 
-        <tr>
-            <td colspan="6">
-                Belum ada user.
-            </td>
-        </tr>
+                <div class="user-alert user-alert-{{ message.tags|default:'info' }}">
 
-        {% endfor %}
+                    <div class="user-alert-icon">
 
-    </tbody>
+                        {% if message.tags == "success" %}
+                            ✓
+                        {% elif message.tags == "error" %}
+                            !
+                        {% else %}
+                            i
+                        {% endif %}
 
-</table>
+                    </div>
+
+                    <div class="user-alert-content">
+                        {{ message }}
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- ==================== STATISTICS ==================== -->
+    <div class="user-stat-grid">
+
+
+        <!-- TOTAL USER -->
+        <div class="user-stat-card">
+
+            <div class="user-stat-top">
+
+                <div class="user-stat-icon user-stat-icon-blue">
+                    👥
+                </div>
+
+            </div>
+
+            <div class="user-stat-value">
+                {{ users|length }}
+            </div>
+
+            <div class="user-stat-label">
+                Total User
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE USER -->
+        <div class="user-stat-card">
+
+            <div class="user-stat-top">
+
+                <div class="user-stat-icon user-stat-icon-green">
+                    ✓
+                </div>
+
+            </div>
+
+            <div class="user-stat-value">
+
+                {% with active_count=0 %}
+
+                    {% for user in users %}
+
+                        {% if user.status == "active" %}
+
+                            {% with active_count=active_count|add:1 %}
+                            {% endwith %}
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                    {{ active_count }}
+
+                {% endwith %}
+
+            </div>
+
+            <div class="user-stat-label">
+                User Aktif
+            </div>
+
+        </div>
+
+
+        <!-- ADMIN -->
+        <div class="user-stat-card">
+
+            <div class="user-stat-top">
+
+                <div class="user-stat-icon user-stat-icon-orange">
+                    🔐
+                </div>
+
+            </div>
+
+            <div class="user-stat-value">
+
+                {% with admin_count=0 %}
+
+                    {% for user in users %}
+
+                        {% if user.role == "admin" %}
+
+                            {% with admin_count=admin_count|add:1 %}
+                            {% endwith %}
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                    {{ admin_count }}
+
+                {% endwith %}
+
+            </div>
+
+            <div class="user-stat-label">
+                Administrator
+            </div>
+
+        </div>
+
+
+        <!-- NON ADMIN -->
+        <div class="user-stat-card">
+
+            <div class="user-stat-top">
+
+                <div class="user-stat-icon user-stat-icon-purple">
+                    🛡
+                </div>
+
+            </div>
+
+            <div class="user-stat-value">
+
+                {% with staff_count=0 %}
+
+                    {% for user in users %}
+
+                        {% if user.role != "admin" %}
+
+                            {% with staff_count=staff_count|add:1 %}
+                            {% endwith %}
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                    {{ staff_count }}
+
+                {% endwith %}
+
+            </div>
+
+            <div class="user-stat-label">
+                User Non-Admin
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================== USER TABLE CARD ==================== -->
+    <div class="user-card">
+
+
+        <!-- CARD HEADER -->
+        <div class="user-card-header">
+
+            <div>
+
+                <h2 class="user-card-title">
+                    Daftar User
+                </h2>
+
+                <p class="user-card-description">
+                    Daftar akun yang memiliki akses ke sistem KOPERA.
+                </p>
+
+            </div>
+
+
+            <div class="user-card-header-count">
+                {{ users|length }} user
+            </div>
+
+        </div>
+
+
+        <!-- TABLE -->
+        <div class="user-card-body user-table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            USER
+                        </th>
+
+                        <th>
+                            EMAIL
+                        </th>
+
+                        <th>
+                            ROLE
+                        </th>
+
+                        <th>
+                            STATUS
+                        </th>
+
+                        <th class="user-text-right">
+                            AKSI
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for user in users %}
+
+                    <tr>
+
+
+                        <!-- USER -->
+                        <td>
+
+                            <div class="user-table-user">
+
+                                <div class="user-avatar">
+
+                                    {{ user.name|default:user.username|slice:":1"|upper }}
+
+                                </div>
+
+
+                                <div class="user-table-user-info">
+
+                                    <div class="user-table-user-name">
+                                        {{ user.name|default:"-" }}
+                                    </div>
+
+                                    <div class="user-table-username">
+                                        @{{ user.username }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- EMAIL -->
+                        <td>
+
+                            <span class="user-table-secondary">
+                                {{ user.email|default:"-" }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- ROLE -->
+                        <td>
+
+                            {% if user.role == "admin" %}
+
+                                <span class="user-role-badge user-role-admin">
+                                    Administrator
+                                </span>
+
+                            {% elif user.role == "pengurus" %}
+
+                                <span class="user-role-badge user-role-pengurus">
+                                    Pengurus
+                                </span>
+
+                            {% elif user.role == "kasir" %}
+
+                                <span class="user-role-badge user-role-kasir">
+                                    Kasir
+                                </span>
+
+                            {% elif user.role == "anggota" %}
+
+                                <span class="user-role-badge user-role-anggota">
+                                    Anggota
+                                </span>
+
+                            {% else %}
+
+                                <span class="user-role-badge user-role-default">
+                                    {{ user.role|default:"-" }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- STATUS -->
+                        <td>
+
+                            {% if user.status == "active" %}
+
+                                <span class="user-status-badge user-status-active">
+
+                                    <span class="user-status-dot"></span>
+
+                                    Aktif
+
+                                </span>
+
+                            {% elif user.status == "inactive" %}
+
+                                <span class="user-status-badge user-status-inactive">
+
+                                    <span class="user-status-dot"></span>
+
+                                    Nonaktif
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="user-status-badge user-status-inactive">
+
+                                    <span class="user-status-dot"></span>
+
+                                    {{ user.status|default:"-" }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACTION -->
+                        <td class="user-text-right">
+
+                            <div class="user-table-actions">
+
+                                <a
+                                    href="{% url 'user_detail' user_id=user.id %}"
+                                    class="user-action user-action-view"
+                                    title="Lihat Detail"
+                                >
+                                    Lihat
+                                </a>
+
+                                <a
+                                    href="{% url 'user_edit' user_id=user.id %}"
+                                    class="user-action user-action-edit"
+                                    title="Edit User"
+                                >
+                                    Edit
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <!-- EMPTY STATE -->
+                    <tr>
+
+                        <td colspan="5">
+
+                            <div class="user-empty-state">
+
+                                <div class="user-empty-icon">
+                                    👥
+                                </div>
+
+                                <h3>
+                                    Belum Ada User
+                                </h3>
+
+                                <p>
+                                    Belum terdapat user yang terdaftar di sistem.
+                                </p>
+
+                                <a
+                                    href="{% url 'user_create' %}"
+                                    class="user-btn user-btn-primary"
+                                >
+                                    <span>+</span>
+                                    Tambah User
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

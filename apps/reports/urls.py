@@ -1,15 +1,16 @@
 from django.urls import path
-
 from . import views
 
-
+app_name = "reports"
 urlpatterns = [
-    path("dashboard/", views.dashboard, name="reports_dashboard"),
-    path("sales/", views.sales_report, name="reports_sales"),
-    path("purchases/", views.purchase_report, name="reports_purchases"),
-    path("inventory/", views.inventory_report, name="reports_inventory"),
-    path("suppliers/", views.supplier_report, name="reports_suppliers"),
-    path("payables/", views.payable_report, name="reports_payables"),
-    path("profit/", views.profit_report, name="reports_profit"),
-    path("audit-logs/", views.audit_logs, name="reports_audit_logs"),
+    path("", views.index, name="index"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("sales/", views.sales_report, name="sales"),
+    path("purchases/", views.purchase_report, name="purchases"),
+    path("inventory/", views.inventory_report, name="inventory"),
+    path("suppliers/", views.supplier_report, name="suppliers"),
+    path("payables/", views.payable_report, name="payables"),
+    path("profit/", views.profit_report, name="profit"),
+    path("audit-logs/", views.audit_logs, name="audit_logs"),
+    path("export/<str:report_type>/<str:file_format>/", views.export_report, name="export"),
 ]

@@ -99,6 +99,7 @@
                     <td>{{ supplier.status }}</td>
 
                     <td>
+                        <a href="{% url 'master_data:supplier_detail' supplier_id=supplier.id %}" class="btn btn-sm btn-info">Detail</a>
                         <a
                             href="{% url 'master_data:supplier_update' supplier_id=supplier.id %}"
                             class="btn btn-sm btn-warning"

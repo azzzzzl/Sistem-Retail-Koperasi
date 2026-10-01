@@ -4,6 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+openpyxl = "==3.1.5"
+reportlab = "==4.4.3"
 django = "*"
 pymongo = "*"
 

@@ -1,21 +1,2164 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>
-        {% block title %}
-            Toko Koperasi
-        {% endblock %}
+        {% block title %}KOPERA{% endblock %}
     </title>
+
+
+    <!-- =====================================================
+         GOOGLE FONT - POPPINS
+    ====================================================== -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- =====================================================
+         MAIN CSS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/app.css' %}"
+    >
+
+
+    {% block extra_css %}{% endblock %}
+
+
+    <!-- =====================================================
+         BASE OVERRIDE
+    ====================================================== -->
+
+    <style>
+
+        /* =================================================
+           GLOBAL FONT
+        ================================================= */
+
+        html,
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font-family:
+                "Poppins",
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+
+        /* =================================================
+           SIDEBAR ACTIVE MENU
+        ================================================= */
+
+        .sidebar .nav-item.nav-item-primary {
+            background: rgba(185, 28, 28, 0.12) !important;
+            color: #b91c1c !important;
+            font-weight: 600;
+        }
+
+
+        .sidebar .nav-item.nav-item-primary .nav-icon {
+            color: #b91c1c !important;
+        }
+
+
+        .sidebar .nav-item.nav-item-primary .nav-text {
+            color: #b91c1c !important;
+        }
+
+
+        .sidebar .nav-item.nav-item-primary:hover {
+            background: rgba(185, 28, 28, 0.16) !important;
+            color: #991b1b !important;
+        }
+
+
+        .sidebar .nav-item.nav-item-primary:hover .nav-icon,
+        .sidebar .nav-item.nav-item-primary:hover .nav-text {
+            color: #991b1b !important;
+        }
+
+
+        /* =================================================
+           TOPBAR SPACING
+        ================================================= */
+
+        .topbar {
+            padding-left: 28px !important;
+            padding-right: 28px !important;
+        }
+
+
+        .topbar-left,
+        .topbar-right {
+            gap: 16px;
+        }
+
+
+        .topbar-title {
+            padding-left: 4px;
+        }
+
+
+        /* =================================================
+           MAIN CONTENT SPACING
+        ================================================= */
+
+        .main-content {
+            padding-left: 28px !important;
+            padding-right: 28px !important;
+            padding-top: 28px !important;
+            padding-bottom: 36px !important;
+        }
+
+
+        /* =================================================
+           FOOTER SPACING
+        ================================================= */
+
+        .app-footer {
+            padding:
+                20px
+                28px
+                24px !important;
+
+            margin-top: 12px;
+        }
+
+
+        /* =================================================
+           SIDEBAR NAV SPACING
+        ================================================= */
+
+        .sidebar-nav {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+
+        .nav-item {
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+
+        /* =================================================
+           SIDEBAR SECTION SPACING
+        ================================================= */
+
+        .nav-section {
+            margin-bottom: 18px;
+        }
+
+
+        .nav-section-title {
+            padding-left: 12px;
+            padding-right: 12px;
+            margin-bottom: 7px;
+        }
+
+
+        /* =================================================
+           SIDEBAR USER
+        ================================================= */
+
+        .sidebar-user {
+            margin-left: 16px;
+            margin-right: 16px;
+            margin-bottom: 18px;
+        }
+
+
+        /* =================================================
+           BRAND
+        ================================================= */
+
+        .sidebar-brand {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+
+        /* =================================================
+           FOOTER RESPONSIVE
+        ================================================= */
+
+        @media (max-width: 900px) {
+
+            .topbar {
+                padding-left: 18px !important;
+                padding-right: 18px !important;
+            }
+
+
+            .main-content {
+                padding-left: 18px !important;
+                padding-right: 18px !important;
+                padding-top: 20px !important;
+                padding-bottom: 28px !important;
+            }
+
+
+            .app-footer {
+                padding:
+                    18px
+                    18px
+                    22px !important;
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .topbar {
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+            }
+
+
+            .main-content {
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+                padding-top: 18px !important;
+                padding-bottom: 24px !important;
+            }
+
+
+            .app-footer {
+                padding:
+                    16px
+                    14px
+                    20px !important;
+
+                gap: 6px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
-    {% block content %}
-    {% endblock %}
+{% if request.session.user_id %}
+
+
+    <!-- =====================================================
+         MOBILE SIDEBAR OVERLAY
+    ====================================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside
+        class="sidebar"
+        id="sidebar"
+    >
+
+
+        <!-- =================================================
+             BRAND
+        ================================================== -->
+
+        <div class="sidebar-brand">
+
+            <a
+                href="{% url 'dashboard' %}"
+                class="koper-brand"
+            >
+
+                <img
+                    src="{% static 'images/LogoKopera.jpeg' %}"
+                    alt="Logo KOPERA"
+                    class="koper-brand-logo"
+                    style="
+                        width: 38px;
+                        height: 38px;
+                        object-fit: contain;
+                        display: block;
+                        flex-shrink: 0;
+                    "
+                >
+
+                <span class="koper-brand-name">
+                    KOPERA
+                </span>
+
+            </a>
+
+
+            <button
+                type="button"
+                class="sidebar-close"
+                id="sidebarClose"
+                aria-label="Tutup menu"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+
+        <!-- =================================================
+             USER PROFILE
+        ================================================== -->
+
+        <div class="sidebar-user">
+
+            <div class="sidebar-avatar">
+
+                {{ request.session.name|default:"U"|slice:":1"|upper }}
+
+            </div>
+
+
+            <div class="sidebar-user-info">
+
+                <strong>
+                    {{ request.session.name|default:"Pengguna" }}
+                </strong>
+
+                <span>
+                    {{ request.session.role|default:"User" }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             NAVIGATION
+        ================================================== -->
+
+        <nav class="sidebar-nav">
+
+
+            <!-- =================================================
+                 UTAMA
+            ================================================== -->
+
+            <div class="nav-section">
+
+                <div class="nav-section-title">
+                    Utama
+                </div>
+
+
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}nav-item-primary{% endif %}"
+                >
+
+                    <span class="nav-icon">
+
+                        <svg
+                            width="19"
+                            height="19"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+
+                            <rect
+                                x="3"
+                                y="3"
+                                width="7"
+                                height="7"
+                                rx="1.5"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+
+                            <rect
+                                x="14"
+                                y="3"
+                                width="7"
+                                height="7"
+                                rx="1.5"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+
+                            <rect
+                                x="3"
+                                y="14"
+                                width="7"
+                                height="7"
+                                rx="1.5"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+
+                            <rect
+                                x="14"
+                                y="14"
+                                width="7"
+                                height="7"
+                                rx="1.5"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+
+                        </svg>
+
+                    </span>
+
+
+                    <span class="nav-text">
+                        Dashboard
+                    </span>
+
+                </a>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 ADMIN
+            ================================================== -->
+
+            {% if request.session.role == 'Admin' %}
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Administrasi
+                    </div>
+
+
+                    <!-- USER MANAGEMENT -->
+
+                    <a
+                        href="{% url 'user_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_create' or request.resolver_match.url_name == 'user_detail' or request.resolver_match.url_name == 'user_edit' or request.resolver_match.url_name == 'user_status' or request.resolver_match.url_name == 'user_reset_password' or request.resolver_match.url_name == 'user_role' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M16 21V19C16 16.7909 14.2091 15 12 15H6C3.79086 15 2 16.7909 2 19V21"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <circle
+                                    cx="9"
+                                    cy="7"
+                                    r="4"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                                <path
+                                    d="M22 21V19C22 17.1362 20.7252 15.5701 19 15.126"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M16 3.126C17.7252 3.5701 19 5.1362 19 7C19 8.8638 17.7252 10.4299 16 10.874"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            User Management
+                        </span>
+
+                    </a>
+
+
+                    <!-- AUDIT LOG -->
+
+                    <a
+                        href="{% url 'reports:audit_logs' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'audit_logs' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M12 3L20 6V11C20 16 16.5 19.5 12 21C7.5 19.5 4 16 4 11V6L12 3Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M9 12L11 14L15 10"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Audit Log
+                        </span>
+
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+
+
+            <!-- =================================================
+                 PENGURUS
+            ================================================== -->
+
+            {% if request.session.role == 'Pengurus' %}
+
+
+                <!-- =================================================
+                     MASTER DATA
+                ================================================== -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Master Data
+                    </div>
+
+
+                    <!-- PRODUK -->
+
+                    <a
+                        href="{% url 'master_data:product_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_detail' or request.resolver_match.url_name == 'product_update' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M20 7L12 3L4 7L12 11L20 7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M4 7V17L12 21L20 17V7"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M12 11V21"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Produk
+                        </span>
+
+                    </a>
+
+
+                    <!-- KATEGORI -->
+
+                    <a
+                        href="{% url 'master_data:category_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'category_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M4 5H20"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M4 12H20"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M4 19H20"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Kategori
+                        </span>
+
+                    </a>
+
+
+                    <!-- SUPPLIER -->
+
+                    <a
+                        href="{% url 'master_data:supplier_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'supplier_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M3 7H15V18H3V7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M15 10H19L21 13V18H15V10Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <circle
+                                    cx="7"
+                                    cy="18"
+                                    r="2"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                                <circle
+                                    cx="17"
+                                    cy="18"
+                                    r="2"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Supplier
+                        </span>
+
+                    </a>
+
+
+                    <!-- ANGGOTA -->
+
+                    <a
+                        href="{% url 'master_data:member_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'member_list' or request.resolver_match.url_name == 'member_detail' or request.resolver_match.url_name == 'member_update' or request.resolver_match.url_name == 'member_transactions' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <circle
+                                    cx="9"
+                                    cy="8"
+                                    r="4"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                                <path
+                                    d="M3 21C3 17.6863 5.6863 15 9 15C12.3137 15 15 17.6863 15 21"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M16 4.5C18.2091 4.5 20 6.2909 20 8.5C20 10.7091 18.2091 12.5 16 12.5"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M17 15.5C19.2091 15.5 21 17.2909 21 19.5"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Anggota
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     PEMBELIAN
+                ================================================== -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Pembelian
+                    </div>
+
+
+                    <!-- PURCHASE ORDER -->
+
+                    <a
+                        href="{% url 'inventory_ui:purchase_order_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'purchase_order_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M6 2H14L19 7V22H6V2Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M14 2V7H19"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M9 12H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M9 16H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Purchase Order
+                        </span>
+
+                    </a>
+
+
+                    <!-- PENERIMAAN -->
+
+                    <a
+                        href="{% url 'inventory_ui:goods_receipt_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'goods_receipt_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M3 7H15V18H3V7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M15 10H19L21 13V18H15V10Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <circle
+                                    cx="7"
+                                    cy="18"
+                                    r="2"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                                <circle
+                                    cx="17"
+                                    cy="18"
+                                    r="2"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Penerimaan
+                        </span>
+
+                    </a>
+
+
+                    <!-- PEMBELIAN -->
+
+                    <a
+                        href="{% url 'inventory_ui:purchase_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'purchase_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M5 3H19V21H5V3Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M8 7H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 11H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 15H13"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Riwayat Pembelian
+                        </span>
+
+                    </a>
+
+
+                    <!-- RETUR -->
+
+                    <a
+                        href="{% url 'inventory_ui:purchase_return_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'purchase_return_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M9 7L5 11L9 15"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M5 11H15C18.3137 11 21 13.6863 21 17V18"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Retur Pembelian
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     PERSEDIAAN
+                ================================================== -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Persediaan
+                    </div>
+
+
+                    <!-- INVENTORY -->
+
+                    <a
+                        href="{% url 'inventory_ui:stock_movement_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'stock_movement_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M4 17L9 12L13 16L20 9"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M15 9H20V14"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Inventory
+                        </span>
+
+                    </a>
+
+
+                    <!-- STOCK OPNAME -->
+
+                    <a
+                        href="{% url 'inventory_ui:stock_opname_list' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'stock_opname_list' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M5 3H19V21H5V3Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M8 8H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 12H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 16H12"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Stock Opname
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     KEUANGAN
+                ================================================== -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Keuangan
+                    </div>
+
+
+                    <!-- HUTANG SUPPLIER -->
+
+                    <a
+                        href="{% url 'reports:payables' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'payables' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <rect
+                                    x="3"
+                                    y="5"
+                                    width="18"
+                                    height="14"
+                                    rx="2"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                                <path
+                                    d="M3 10H21"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                />
+
+                                <path
+                                    d="M7 15H11"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Hutang Supplier
+                        </span>
+
+                    </a>
+
+
+                    <!-- PENGELUARAN -->
+
+                    <a
+                        href="{% url 'finance:expenses' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'expenses' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M12 3V21"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M17 7C17 5.343 14.761 4 12 4C9.239 4 7 5.343 7 7C7 10.5 17 9.5 17 13.5C17 15.5 14.761 17 12 17C9.239 17 7 15.657 7 14"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Pengeluaran
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     LAPORAN
+                ================================================== -->
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Laporan
+                    </div>
+
+
+                    <!-- DASHBOARD LAPORAN -->
+
+                    <a
+                        href="{% url 'reports:index' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'index' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M4 19V5"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M4 19H21"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 16V12"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M12 16V8"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M16 16V10"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M20 16V6"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Dashboard Laporan
+                        </span>
+
+                    </a>
+
+
+                    <!-- LAPORAN PENJUALAN -->
+
+                    <a
+                        href="{% url 'reports:sales' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'sales' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon nav-icon-text">
+                            Rp
+                        </span>
+
+                        <span class="nav-text">
+                            Laporan Penjualan
+                        </span>
+
+                    </a>
+
+
+                    <!-- LAPORAN PEMBELIAN -->
+
+                    <a
+                        href="{% url 'reports:purchases' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'purchases' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon nav-icon-text">
+                            PO
+                        </span>
+
+                        <span class="nav-text">
+                            Laporan Pembelian
+                        </span>
+
+                    </a>
+
+
+                    <!-- LAPORAN INVENTORY -->
+
+                    <a
+                        href="{% url 'reports:inventory' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'inventory' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon nav-icon-text">
+                            IV
+                        </span>
+
+                        <span class="nav-text">
+                            Laporan Inventory
+                        </span>
+
+                    </a>
+
+
+                    <!-- LAPORAN SUPPLIER -->
+
+                    <a
+                        href="{% url 'reports:suppliers' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'suppliers' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon nav-icon-text">
+                            SP
+                        </span>
+
+                        <span class="nav-text">
+                            Laporan Supplier
+                        </span>
+
+                    </a>
+
+
+                    <!-- LAPORAN LABA -->
+
+                    <a
+                        href="{% url 'reports:profit' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'profit' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon nav-icon-text">
+                            LB
+                        </span>
+
+                        <span class="nav-text">
+                            Laporan Laba
+                        </span>
+
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+
+
+            <!-- =================================================
+                 KASIR
+            ================================================== -->
+
+            {% if request.session.role == 'Kasir' %}
+
+                <div class="nav-section">
+
+                    <div class="nav-section-title">
+                        Penjualan
+                    </div>
+
+
+                    <!-- POS -->
+
+                    <a
+                        href="{% url 'pos' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'pos' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M6 2H18V6H6V2Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M4 6H20V22H4V6Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M8 10H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 14H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 18H12"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            POS
+                        </span>
+
+                    </a>
+
+
+                    <!-- TRANSAKSI -->
+
+                    <a
+                        href="{% url 'sales_history' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'sales_history' or request.resolver_match.url_name == 'sale_detail' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M4 5H20V19H4V5Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M8 9H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 13H16"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                                <path
+                                    d="M8 17H12"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Transaksi
+                        </span>
+
+                    </a>
+
+
+                    <!-- RETUR -->
+
+                    <a
+                        href="{% url 'returns_history' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'returns_history' or request.resolver_match.url_name == 'sales_return_approve' %}nav-item-primary{% endif %}"
+                    >
+
+                        <span class="nav-icon">
+
+                            <svg
+                                width="19"
+                                height="19"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+
+                                <path
+                                    d="M9 7L5 11L9 15"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+
+                                <path
+                                    d="M5 11H15C18.314 11 21 13.686 21 17V18"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                />
+
+                            </svg>
+
+                        </span>
+
+
+                        <span class="nav-text">
+                            Retur
+                        </span>
+
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+
+
+            <!-- =================================================
+                 AKUN
+            ================================================== -->
+
+            <div class="nav-section nav-section-account">
+
+                <div class="nav-section-title">
+                    Akun
+                </div>
+
+
+                <!-- PROFILE -->
+
+                <a
+                    href="{% url 'profile' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'profile' %}nav-item-primary{% endif %}"
+                >
+
+                    <span class="nav-icon">
+
+                        <svg
+                            width="19"
+                            height="19"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="4"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+
+                            <path
+                                d="M4 21C4 16.582 7.582 13 12 13C16.418 13 20 16.582 20 21"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                            />
+
+                        </svg>
+
+                    </span>
+
+
+                    <span class="nav-text">
+                        Profil
+                    </span>
+
+                </a>
+
+
+                <!-- PASSWORD -->
+
+                <a
+                    href="{% url 'password_change' %}"
+                    class="nav-item {% if request.resolver_match.url_name == 'password_change' %}nav-item-primary{% endif %}"
+                >
+
+                    <span class="nav-icon">
+
+                        <svg
+                            width="19"
+                            height="19"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+
+                            <rect
+                                x="4"
+                                y="10"
+                                width="16"
+                                height="11"
+                                rx="2"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                            />
+
+                            <path
+                                d="M8 10V7C8 4.791 9.791 3 12 3C14.209 3 16 4.791 16 7V10"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                            />
+
+                        </svg>
+
+                    </span>
+
+
+                    <span class="nav-text">
+                        Ubah Password
+                    </span>
+
+                </a>
+
+            </div>
+
+        </nav>
+
+
+
+        <!-- =================================================
+             SIDEBAR FOOTER
+        ================================================== -->
+
+        <div class="sidebar-footer">
+
+            <a
+                href="{% url 'logout' %}"
+                class="logout-button"
+            >
+
+                <span class="nav-icon">
+
+                    <svg
+                        width="19"
+                        height="19"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+
+                        <path
+                            d="M10 17L15 12L10 7"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+
+                        <path
+                            d="M15 12H3"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M21 19V5C21 3.895 20.105 3 19 3H15"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                    </svg>
+
+                </span>
+
+
+                <span>
+                    Keluar
+                </span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         APPLICATION SHELL
+    ====================================================== -->
+
+    <div class="app-shell">
+
+
+        <!-- =================================================
+             TOPBAR
+        ================================================== -->
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    type="button"
+                    class="mobile-menu-button"
+                    id="sidebarOpen"
+                    aria-label="Buka menu"
+                >
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </button>
+
+
+                <div class="topbar-title">
+
+                    <span class="topbar-page-label">
+                        KOPERA
+                    </span>
+
+                    <span class="topbar-page-separator">
+                        /
+                    </span>
+
+                    <span class="topbar-page-current">
+
+                        {% block page_name %}
+                            Dashboard
+                        {% endblock %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 TOPBAR RIGHT
+            ================================================== -->
+
+            <div class="topbar-right">
+
+
+                <!-- NOTIFICATION -->
+
+                <button
+                    type="button"
+                    class="topbar-icon-button"
+                    aria-label="Notifikasi"
+                    title="Notifikasi"
+                >
+
+                    <svg
+                        width="19"
+                        height="19"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+
+                        <path
+                            d="M18 8C18 4.686 15.314 2 12 2C8.686 2 6 4.686 6 8C6 15 3 15 3 17H21C21 15 18 15 18 8Z"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linejoin="round"
+                        />
+
+                        <path
+                            d="M10 21H14"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                    </svg>
+
+
+                    <span class="notification-dot"></span>
+
+                </button>
+
+
+
+                <!-- USER -->
+
+                <div class="topbar-user">
+
+                    <div class="topbar-avatar">
+
+                        {{ request.session.name|default:"U"|slice:":1"|upper }}
+
+                    </div>
+
+
+                    <div class="topbar-user-info">
+
+                        <strong>
+                            {{ request.session.name|default:"Pengguna" }}
+                        </strong>
+
+                        <span>
+                            {{ request.session.role|default:"User" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="main-content">
+
+            {% include "components/messages.html" %}
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+
+
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
+
+        <footer class="app-footer">
+
+            <span>
+                © {% now "Y" %} KOPERA
+            </span>
+
+            <span>
+                Digital Cooperative &amp; Commerce Platform
+            </span>
+
+        </footer>
+
+    </div>
+
+{% endif %}
+
+
+
+<!-- =========================================================
+     SIDEBAR MOBILE SCRIPT
+========================================================== -->
+
+{% if request.session.user_id %}
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        const sidebarOpen =
+            document.getElementById("sidebarOpen");
+
+        const sidebarClose =
+            document.getElementById("sidebarClose");
+
+        const sidebarOverlay =
+            document.getElementById("sidebarOverlay");
+
+
+        /* =================================================
+           OPEN SIDEBAR
+        ================================================== */
+
+        function openSidebar() {
+
+            if (!sidebar) {
+                return;
+            }
+
+            sidebar.classList.add("is-open");
+
+
+            if (sidebarOverlay) {
+
+                sidebarOverlay.classList.add(
+                    "is-visible"
+                );
+
+            }
+
+
+            document.body.classList.add(
+                "sidebar-open"
+            );
+
+        }
+
+
+
+        /* =================================================
+           CLOSE SIDEBAR
+        ================================================== */
+
+        function closeSidebar() {
+
+            if (!sidebar) {
+                return;
+            }
+
+            sidebar.classList.remove(
+                "is-open"
+            );
+
+
+            if (sidebarOverlay) {
+
+                sidebarOverlay.classList.remove(
+                    "is-visible"
+                );
+
+            }
+
+
+            document.body.classList.remove(
+                "sidebar-open"
+            );
+
+        }
+
+
+
+        /* =================================================
+           OPEN BUTTON
+        ================================================== */
+
+        if (sidebarOpen) {
+
+            sidebarOpen.addEventListener(
+                "click",
+                openSidebar
+            );
+
+        }
+
+
+
+        /* =================================================
+           CLOSE BUTTON
+        ================================================== */
+
+        if (sidebarClose) {
+
+            sidebarClose.addEventListener(
+                "click",
+                closeSidebar
+            );
+
+        }
+
+
+
+        /* =================================================
+           OVERLAY
+        ================================================== */
+
+        if (sidebarOverlay) {
+
+            sidebarOverlay.addEventListener(
+                "click",
+                closeSidebar
+            );
+
+        }
+
+
+
+        /* =================================================
+           MOBILE MENU CLICK
+        ================================================== */
+
+        if (sidebar) {
+
+            const navLinks =
+                sidebar.querySelectorAll(
+                    ".nav-item, .logout-button"
+                );
+
+
+            navLinks.forEach(
+                function (link) {
+
+                    link.addEventListener(
+                        "click",
+                        function () {
+
+                            if (
+                                window.innerWidth <= 900
+                            ) {
+
+                                closeSidebar();
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+
+
+
+        /* =================================================
+           RESET SIDEBAR DESKTOP
+        ================================================== */
+
+        window.addEventListener(
+            "resize",
+            function () {
+
+                if (
+                    window.innerWidth > 900
+                ) {
+
+                    closeSidebar();
+
+                }
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+{% endif %}
 
 </body>
 

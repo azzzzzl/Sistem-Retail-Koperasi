@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from decimal import Decimal
+import uuid
 
 from bson import ObjectId
 
@@ -11,6 +12,7 @@ from django.template.loader import render_to_string
 from apps.authentication.decorators import permission_required_custom
 from apps.inventory.services import StockMovementService
 from apps.authentication.audit_service import AuditLogService
+from apps.master_data.services import MasterDataService
 
 from .repositories import PosProductRepository
 from .sales_repository import SalesRepository
@@ -85,6 +87,8 @@ def build_sale_items(cart_items):
             "name": product.get("name", ""),
             "quantity": item["quantity"],
             "sellingPrice": float(item["price"]),
+            "purchasePrice": float(product.get("purchase_price", product.get("purchasePrice", 0))),
+            "costPrice": float(product.get("purchase_price", product.get("purchasePrice", 0))),
             "discount": 0.0,
             "subtotal": float(item["subtotal"]),
         })
@@ -124,7 +128,7 @@ def create_return_stock_movements(
             product_id=item["productId"],
             movement_type="IN",
             quantity=item["quantity"],
-            reference_type="OTHER",
+            reference_type="SALES_RETURN",
             reference_id=reference_id,
             notes="Penambahan stok dari retur penjualan.",
             created_by=created_by,
@@ -154,11 +158,14 @@ def pos_page(request):
     discount = Decimal("0")
     total = subtotal - discount
 
+    members = MasterDataService().search_members(status="active")
     return render(
         request,
         "pos/index.html",
         {
             "products": products,
+            "members": members,
+            "payment_methods": ["CASH", "TRANSFER", "QRIS", "OTHER"],
             "search": search,
             "cart_items": cart_items,
             "subtotal": subtotal,
@@ -167,7 +174,6 @@ def pos_page(request):
         },
     )
 
-@permission_required_custom("sales")
 def scan_barcode(request):
     print("=== SCAN BARCODE VIEW TERPANGGIL ===")
 
@@ -193,10 +199,6 @@ def scan_barcode(request):
 
     print("PRODUCT:", product)
 
-    # =====================================================
-    # BARCODE TIDAK DITEMUKAN
-    # =====================================================
-
     if not product:
         return JsonResponse({
             "success": False,
@@ -205,11 +207,6 @@ def scan_barcode(request):
                 "tidak ditemukan."
             )
         }, status=200)
-
-
-    # =====================================================
-    # CEK STOK
-    # =====================================================
 
     stock = int(product.get("stock", 0))
 
@@ -222,17 +219,7 @@ def scan_barcode(request):
             )
         }, status=200)
 
-
-    # =====================================================
-    # AMBIL ID PRODUK
-    # =====================================================
-
     product_id = str(product["_id"])
-
-
-    # =====================================================
-    # AMBIL CART DARI SESSION
-    # =====================================================
 
     cart = get_cart(request)
 
@@ -245,11 +232,6 @@ def scan_barcode(request):
 
     new_quantity = current_quantity + 1
 
-
-    # =====================================================
-    # CEK QUANTITY TERHADAP STOK
-    # =====================================================
-
     if new_quantity > stock:
         return JsonResponse({
             "success": False,
@@ -259,22 +241,12 @@ def scan_barcode(request):
             )
         }, status=200)
 
-
-    # =====================================================
-    # TAMBAHKAN / UPDATE PRODUK DI CART
-    # =====================================================
-
     cart[product_id] = {
         "product_id": product_id,
         "quantity": new_quantity
     }
 
     save_cart(request, cart)
-
-
-    # =====================================================
-    # HITUNG ULANG CART
-    # =====================================================
 
     cart_items, subtotal = build_cart_items(
         request,
@@ -284,26 +256,12 @@ def scan_barcode(request):
     discount = Decimal("0")
     total = subtotal - discount
 
-
-    # =====================================================
-    # RENDER INDEX.HTML TERBARU
-    # =====================================================
-    #
-    # Tidak menggunakan _cart.html.
-    #
-    # HTML ini nantinya dikirim ke JavaScript.
-    # JavaScript hanya mengambil #cart-container
-    # dari HTML ini.
-    # =====================================================
-
     page_html = render_to_string(
         "pos/index.html",
         {
             "products": [],
             "search": "",
-
             "cart_items": cart_items,
-
             "subtotal": subtotal,
             "discount": discount,
             "total": total,
@@ -311,19 +269,12 @@ def scan_barcode(request):
         request=request
     )
 
-
-    # =====================================================
-    # RESPONSE
-    # =====================================================
-
     return JsonResponse({
         "success": True,
-
         "message": (
             f"{product.get('name')} "
             "berhasil ditambahkan ke keranjang."
         ),
-
         "product": {
             "id": product_id,
             "name": product.get("name", ""),
@@ -334,14 +285,10 @@ def scan_barcode(request):
             ),
             "stock": stock,
         },
-
         "quantity": new_quantity,
-
-        # HTML terbaru index.html
-        # yang akan diproses oleh barcode.js
         "page_html": page_html,
-
     }, status=200)
+
 
 # =========================================================
 # ADD TO CART
@@ -353,11 +300,8 @@ def add_to_cart(request, product_id):
 
     product = repository.get_product(product_id)
 
-    if not product:
-        messages.error(
-            request,
-            "Produk tidak ditemukan.",
-        )
+    if not product or product.get("status", "active") not in {"active", True}:
+        messages.error(request, "Produk tidak ditemukan atau sudah tidak aktif.")
         return redirect("pos")
 
     if request.method != "POST":
@@ -417,11 +361,8 @@ def update_cart(request, product_id):
 
     product = repository.get_product(product_id)
 
-    if not product:
-        messages.error(
-            request,
-            "Produk tidak ditemukan.",
-        )
+    if not product or product.get("status", "active") not in {"active", True}:
+        messages.error(request, "Produk tidak ditemukan atau sudah tidak aktif.")
         return redirect("pos")
 
     try:
@@ -482,235 +423,130 @@ def update_cart(request, product_id):
 def checkout(request):
     if request.method != "POST":
         return redirect("pos")
-
-    # -----------------------------------------------------
-    # AMBIL CART DARI SESSION
-    # -----------------------------------------------------
-
     cart = get_cart(request)
-
     if not cart:
-        messages.error(
-            request,
-            "Keranjang masih kosong.",
-        )
+        messages.error(request, "Keranjang masih kosong.")
         return redirect("pos")
-
-    # -----------------------------------------------------
-    # REPOSITORY & SERVICE
-    # -----------------------------------------------------
 
     product_repository = PosProductRepository()
     sales_repository = SalesRepository()
     payment_repository = PaymentRepository()
     stock_service = StockMovementService()
-
-    # -----------------------------------------------------
-    # BUILD CART
-    # -----------------------------------------------------
-
-    cart_items, subtotal = build_cart_items(
-        request,
-        product_repository,
-    )
-
+    cart_items, subtotal = build_cart_items(request, product_repository)
     if not cart_items:
-        messages.error(
-            request,
-            "Tidak ada produk valid di keranjang.",
-        )
+        messages.error(request, "Tidak ada produk valid di keranjang.")
         return redirect("pos")
-
-    # -----------------------------------------------------
-    # TOTAL
-    # -----------------------------------------------------
-
-    discount = Decimal("0")
-    total = subtotal - discount
-
-    # -----------------------------------------------------
-    # VALIDASI PEMBAYARAN
-    # -----------------------------------------------------
 
     try:
-        payment_amount = Decimal(
-            request.POST.get(
-                "payment_amount",
-                "0",
-            )
-        )
+        discount = Decimal(request.POST.get("discount", "0"))
+        tax = Decimal(request.POST.get("tax", "0"))
+        payment_amount = Decimal(request.POST.get("payment_amount", "0"))
     except (TypeError, ValueError):
-        messages.error(
-            request,
-            "Jumlah pembayaran tidak valid.",
-        )
+        messages.error(request, "Diskon, pajak, dan pembayaran harus berupa angka.")
         return redirect("pos")
-
+    if min(discount, tax, payment_amount) < 0:
+        messages.error(request, "Diskon, pajak, dan pembayaran tidak boleh negatif.")
+        return redirect("pos")
+    if discount > subtotal:
+        messages.error(request, "Diskon tidak boleh melebihi subtotal.")
+        return redirect("pos")
+    total = subtotal - discount + tax
+    if total < 0:
+        messages.error(request, "Total transaksi tidak valid.")
+        return redirect("pos")
     if payment_amount < total:
-        messages.error(
-            request,
-            "Jumlah pembayaran kurang dari total transaksi.",
-        )
+        messages.error(request, "Jumlah pembayaran kurang dari total transaksi.")
         return redirect("pos")
 
-    # -----------------------------------------------------
-    # VALIDASI STOK TERBARU
-    # -----------------------------------------------------
+    payment_method = request.POST.get("payment_method", "CASH").strip().upper()
+    if payment_method not in {"CASH", "TRANSFER", "QRIS", "OTHER"}:
+        messages.error(request, "Metode pembayaran tidak valid.")
+        return redirect("pos")
+    member_id = request.POST.get("member_id", "").strip() or None
+    if member_id:
+        member = MasterDataService().get_member_by_id(member_id)
+        if not member or member.get("status", "active") != "active":
+            messages.error(request, "Anggota tidak ditemukan atau tidak aktif.")
+            return redirect("pos")
+    reference_number = request.POST.get("reference_number", "").strip() or None
+    if payment_method != "CASH" and payment_amount != total:
+        messages.error(request, "Untuk pembayaran non-tunai, jumlah pembayaran harus sama dengan total transaksi.")
+        return redirect("pos")
 
+    # Always validate against latest stock just before mutation.
+    refreshed_items = []
     for item in cart_items:
-        product_id = item["product_id"]
-
-        latest_product = product_repository.get_product(
-            product_id
-        )
-
-        if not latest_product:
-            messages.error(
-                request,
-                f"Produk {item['product'].get('name')} "
-                f"sudah tidak tersedia.",
-            )
+        latest = product_repository.get_product(item["product_id"])
+        if not latest:
+            messages.error(request, f"Produk {item['product'].get('name')} sudah tidak tersedia.")
             return redirect("pos")
-
-        latest_stock = int(
-            latest_product.get("stock", 0)
-        )
-
-        requested_quantity = int(
-            item["quantity"]
-        )
-
-        if requested_quantity > latest_stock:
-            messages.error(
-                request,
-                f"Stok {latest_product.get('name')} "
-                f"tidak mencukupi. "
-                f"Stok tersedia: {latest_stock}, "
-                f"jumlah yang dibeli: "
-                f"{requested_quantity}.",
-            )
+        latest_stock = int(latest.get("stock", 0))
+        if item["quantity"] > latest_stock:
+            messages.error(request, f"Stok {latest.get('name')} tidak mencukupi. Tersedia {latest_stock}.")
             return redirect("pos")
-
-    # -----------------------------------------------------
-    # GENERATE INVOICE
-    # -----------------------------------------------------
-
-    invoice_number = generate_invoice_number(
-        sales_repository.sales
-    )
-
-    # -----------------------------------------------------
-    # SNAPSHOT ITEM
-    # -----------------------------------------------------
-
-    sale_items = build_sale_items(
-        cart_items
-    )
-
-    # -----------------------------------------------------
-    # DATA TRANSAKSI
-    # -----------------------------------------------------
+        item["product"] = latest
+        refreshed_items.append(item)
 
     now = datetime.now(timezone.utc)
-
+    invoice_number = generate_invoice_number(sales_repository.sales)
+    sale_items = build_sale_items(refreshed_items)
     sale_data = {
         "invoiceNumber": invoice_number,
-        "memberId": None,
+        "memberId": member_id,
         "cashierId": request.session.get("user_id"),
         "saleDate": now,
         "items": sale_items,
         "subtotal": float(subtotal),
         "discount": float(discount),
-        "tax": 0.0,
+        "tax": float(tax),
         "total": float(total),
         "payment": float(payment_amount),
-        "change": float(payment_amount - total),
+        "change": float(payment_amount - total) if payment_method == "CASH" else 0.0,
+        "paymentMethod": payment_method,
+        "referenceNumber": reference_number,
         "status": "COMPLETED",
         "createdAt": now,
         "updatedAt": now,
     }
 
-    # -----------------------------------------------------
-    # SIMPAN SALES
-    # -----------------------------------------------------
-
+    sale_id = None
+    payment_id = None
+    movements = []
     try:
-        sale_id = sales_repository.create_sale(
-            sale_data
-        )
+        sale_id = sales_repository.create_sale(sale_data)
+        for item in refreshed_items:
+            movement = stock_service.create_movement(
+                product_id=item["product_id"], movement_type="OUT", quantity=item["quantity"],
+                reference_type="SALE", reference_id=sale_id,
+                notes="Pengurangan stok dari transaksi penjualan.", created_by=request.session.get("user_id"),
+            )
+            movements.append(movement)
+        payment_id = payment_repository.create_payment({
+            "saleId": sale_id,
+            "paymentMethod": payment_method,
+            "amount": float(payment_amount),
+            "referenceNumber": reference_number,
+            "paidAt": now,
+        })
     except Exception as error:
-        messages.error(
-            request,
-            f"Transaksi penjualan gagal disimpan: {error}",
-        )
+        # Compensating rollback for standalone MongoDB; stock changes are guarded by expected stock.
+        for movement in reversed(movements):
+            stock_service.repository.rollback_movement(movement)
+        if payment_id is not None:
+            payment_repository.delete_payment(payment_id)
+        if sale_id is not None:
+            sales_repository.delete_sale(sale_id)
+        messages.error(request, f"Transaksi dibatalkan karena terjadi kesalahan: {error}")
         return redirect("pos")
-
-    # -----------------------------------------------------
-    # KURANGI STOK
-    # -----------------------------------------------------
-
-    try:
-        create_sale_stock_movements(
-            cart_items=cart_items,
-            stock_movement_service=stock_service,
-            reference_id=sale_id,
-            created_by=request.session.get("user_id"),
-        )
-    except Exception as error:
-        messages.error(
-            request,
-            f"Stok gagal diperbarui: {error}",
-        )
-        return redirect("pos")
-
-    # -----------------------------------------------------
-    # SIMPAN PAYMENT
-    # -----------------------------------------------------
-
-    payment_data = {
-        "saleId": sale_id,
-        "paymentMethod": "CASH",
-        "amount": float(payment_amount),
-        "referenceNumber": None,
-        "paidAt": now,
-    }
-
-    try:
-        payment_id = payment_repository.create_payment(
-            payment_data
-        )
-    except Exception as error:
-        messages.error(
-            request,
-            f"Pembayaran gagal disimpan: {error}",
-        )
-        return redirect("pos")
-
-    # -----------------------------------------------------
-    # KOSONGKAN CART
-    # -----------------------------------------------------
 
     save_cart(request, {})
-
-    audit_service = AuditLogService()
-
-    audit_service.log(
+    AuditLogService().log(
         request=request,
-        action="CREATE_SALE",
-        description=(
-            f"Transaksi penjualan {invoice_number} "
-            f"berhasil dibuat dengan total "
-            f"Rp {float(total):,.0f}."
-        ),
-        target_type="sale",
-        target_id=str(sale_id),
+        action="CREATE",
+        description=f"Transaksi penjualan {invoice_number} berhasil dibuat dengan total Rp {float(total):,.0f}.",
+        target_type="sale", target_id=str(sale_id), module="sales", reference_id=str(sale_id), after=sale_data,
     )
-
-    return redirect(
-        "pos_receipt",
-        sale_id=str(sale_id),
-    )
-
+    return redirect("pos_receipt", sale_id=str(sale_id))
 
 # =========================================================
 # RECEIPT
@@ -795,8 +631,6 @@ def sale_detail(request, sale_id):
 def sales_return(request, sale_id):
     sales_repository = SalesRepository()
     returns_repository = ReturnsRepository()
-    stock_service = StockMovementService()
-
     # Validasi sale_id
     try:
         sale_object_id = ObjectId(sale_id)
@@ -810,6 +644,9 @@ def sales_return(request, sale_id):
     if not sale:
         messages.error(request, "Transaksi tidak ditemukan.")
         return redirect("sales_history")
+    if sale.get("status") != "COMPLETED":
+        messages.error(request, "Retur hanya dapat diajukan untuk transaksi COMPLETED.")
+        return redirect("sale_detail", sale_id=sale_id)
 
     sale["sale_id"] = str(sale["_id"])
 
@@ -974,58 +811,186 @@ def sales_return(request, sale_id):
         for item in return_items
     )
 
+    return_number = f"RET-{now.year}-{uuid.uuid4().hex[:8].upper()}"
     return_data = {
+        "returnNumber": return_number,
         "saleId": sale_object_id,
+        "memberId": sale.get("memberId"),
         "invoiceNumber": sale.get("invoiceNumber"),
         "cashierId": request.session.get("user_id"),
+        "createdBy": request.session.get("user_id"),
         "returnDate": now,
         "items": return_items,
-        "total": total_return,
-        "status": "COMPLETED",
+        "reason": request.POST.get("reason", "").strip(),
+        "refundAmount": float(total_return),
+        "total": float(total_return),
+        "refundStatus": "PENDING",
+        "status": "PENDING",
         "createdAt": now,
         "updatedAt": now,
     }
 
-    # Simpan data retur
-    return_id = returns_repository.create_return(
-        return_data
-    )
+    # Retur diajukan terlebih dahulu; stok baru dikembalikan setelah approval.
+    return_id = returns_repository.create_return(return_data)
 
-    # Kembalikan stok
-    create_return_stock_movements(
-        return_items=return_items,
-        stock_movement_service=stock_service,
-        reference_id=return_id,
-        created_by=request.session.get("user_id"),
-    )
-
-    # Audit log
-    audit_service = AuditLogService()
-
-    audit_service.log(
+    AuditLogService().log(
         request=request,
-        action="CREATE_SALES_RETURN",
+        action="CREATE",
         description=(
-            f"Retur penjualan untuk invoice "
-            f"{sale.get('invoiceNumber')} berhasil diproses "
-            f"dengan total retur "
-            f"Rp {total_return:,.0f}."
+            f"Retur penjualan untuk invoice {sale.get('invoiceNumber')} "
+            f"diajukan dengan total Rp {total_return:,.0f}."
         ),
         target_type="sales_return",
         target_id=str(return_id),
+        module="returns",
+        reference_id=str(return_id),
+        after=return_data,
     )
 
     messages.success(
         request,
-        "Retur berhasil diproses dan stok telah dikembalikan.",
+        "Retur berhasil diajukan dan menunggu approval.",
     )
 
-    return redirect(
-        "sale_detail",
-        sale_id=sale["sale_id"],
-    )
+    return redirect("sale_detail", sale_id=sale["sale_id"])
 
-@permission_required_custom("sales")
+@permission_required_custom("sales_cancel")
+def sale_cancel(request, sale_id):
+    if request.method != "POST":
+        return redirect("sale_detail", sale_id=sale_id)
+    sales_repository = SalesRepository()
+    try:
+        sale_object_id = ObjectId(sale_id)
+    except Exception:
+        messages.error(request, "ID transaksi tidak valid.")
+        return redirect("sales_history")
+    sale = sales_repository.get_sale(sale_object_id)
+    if not sale:
+        messages.error(request, "Transaksi tidak ditemukan.")
+        return redirect("sales_history")
+    if sale.get("status") != "COMPLETED":
+        messages.error(request, "Hanya transaksi COMPLETED yang dapat dibatalkan.")
+        return redirect("sale_detail", sale_id=sale_id)
+    existing_returns = ReturnsRepository().get_returns_by_sale(sale_object_id)
+    if existing_returns:
+        messages.error(request, "Transaksi yang sudah memiliki retur tidak dapat dibatalkan penuh.")
+        return redirect("sale_detail", sale_id=sale_id)
+    sale = sales_repository.claim_for_cancel(sale_object_id)
+    if not sale:
+        messages.error(request, "Transaksi sedang atau sudah diproses pembatalannya.")
+        return redirect("sale_detail", sale_id=sale_id)
+    stock_service = StockMovementService()
+    movements=[]
+    try:
+        for item in sale.get("items", []):
+            movements.append(stock_service.create_movement(
+                product_id=item.get("productId"), movement_type="IN", quantity=int(item.get("quantity", 0)),
+                reference_type="SALE_CANCEL", reference_id=sale_id,
+                notes=f"Pembatalan transaksi {sale.get('invoiceNumber')}", created_by=request.session.get("user_id"),
+            ))
+        cancelled = sales_repository.update_sale(
+            sale_object_id,
+            {
+                "status": "CANCELLED",
+                "cancelledAt": datetime.now(timezone.utc),
+                "cancelledBy": request.session.get("user_id"),
+                "updatedAt": datetime.now(timezone.utc),
+            },
+        )
+        if getattr(cancelled, "modified_count", 0) != 1:
+            raise RuntimeError("Status transaksi gagal diperbarui menjadi CANCELLED.")
+        refunded = PaymentRepository().mark_sale_refunded(sale_object_id, request.session.get("user_id"))
+        if getattr(refunded, "matched_count", 0) < 1:
+            raise RuntimeError("Pembayaran transaksi tidak ditemukan sehingga pembatalan dibatalkan.")
+    except Exception as error:
+        for movement in reversed(movements):
+            try:
+                stock_service.repository.rollback_movement(movement)
+            except Exception:
+                pass
+        sales_repository.sales.update_one({"_id": sale_object_id, "status": "CANCELLING"}, {"$set": {"status": "COMPLETED", "updatedAt": datetime.now(timezone.utc)}})
+        messages.error(request, f"Pembatalan gagal: {error}")
+        return redirect("sale_detail", sale_id=sale_id)
+    AuditLogService().log(request,"CANCEL",f"Transaksi {sale.get('invoiceNumber')} dibatalkan.","sale",sale_id,module="sales",reference_id=sale_id,before={"status":"COMPLETED"},after={"status":"CANCELLED"})
+    messages.success(request, "Transaksi dibatalkan dan stok dikembalikan.")
+    return redirect("sale_detail", sale_id=sale_id)
+
+@permission_required_custom("return_management")
+def sales_return_approve(request, return_id):
+    if request.method != "POST":
+        return redirect("returns_history")
+
+    returns_repository = ReturnsRepository()
+    stock_service = StockMovementService()
+    try:
+        return_object_id = ObjectId(return_id)
+    except Exception:
+        messages.error(request, "ID retur tidak valid.")
+        return redirect("returns_history")
+
+    ret = returns_repository.claim_for_approval(return_object_id)
+    if not ret:
+        messages.error(request, "Retur penjualan tidak ditemukan atau sedang/telah diproses.")
+        return redirect("returns_history")
+
+    movements = []
+    refund_id = None
+    try:
+        for item in ret.get("items", []):
+            # Product may explicitly opt out of restocking returned goods.
+            product_doc = PosProductRepository().get_product(str(item.get("productId")))
+            is_resellable = True if not product_doc else product_doc.get("isResellable", product_doc.get("resellable", True))
+            if is_resellable:
+                movements.append(stock_service.create_movement(
+                    product_id=item.get("productId"),
+                    movement_type="IN",
+                    quantity=int(item.get("quantity", 0)),
+                    reference_type="SALES_RETURN",
+                    reference_id=return_id,
+                    notes=f"Pengembalian stok retur penjualan {ret.get('invoiceNumber', '')}",
+                    created_by=request.session.get("user_id"),
+                ))
+        refund = PaymentRepository().create_refund(
+            sale_id=ret.get("saleId"),
+            return_id=return_object_id,
+            amount=ret.get("refundAmount", ret.get("total", 0)),
+            refunded_by=request.session.get("user_id"),
+        )
+        refund_id = refund.get("_id") if refund else None
+        updated = returns_repository.update_return(return_object_id, {
+            "status": "APPROVED",
+            "approvedBy": request.session.get("user_id"),
+            "approvedAt": datetime.now(timezone.utc),
+            "refundStatus": "COMPLETED",
+            "refundPaymentId": refund_id,
+            "updatedAt": datetime.now(timezone.utc),
+        })
+        if getattr(updated, "modified_count", 0) != 1:
+            raise RuntimeError("Status retur gagal diperbarui menjadi APPROVED.")
+        AuditLogService().log(
+            request=request, action="APPROVE",
+            description=f"Retur penjualan {return_id} disetujui dan stok dikembalikan.",
+            target_type="sales_return", target_id=return_id,
+            module="returns", reference_id=return_id,
+            before={"status": "PENDING"}, after={"status": "APPROVED"},
+        )
+        messages.success(request, "Retur penjualan disetujui dan stok telah dikembalikan.")
+    except Exception as exc:
+        for movement in reversed(movements):
+            try:
+                stock_service.repository.rollback_movement(movement)
+            except Exception:
+                pass
+        if refund_id is not None:
+            try:
+                PaymentRepository().delete_refund(refund_id)
+            except Exception:
+                pass
+        returns_repository.update_return(return_object_id, {"status": "PENDING", "refundStatus": "PENDING"})
+        messages.error(request, f"Approval retur gagal: {exc}")
+    return redirect("returns_history")
+
+@permission_required_custom("return_view")
 def returns_history(request):
     returns_repository = ReturnsRepository()
 

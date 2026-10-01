@@ -1,5 +1,8 @@
+```html
 {% extends "base.html" %}
 {% load static %}
+
+{% block title %}POS Penjualan{% endblock %}
 
 {% block content %}
 
@@ -10,425 +13,905 @@
 
 <script src="{% static 'js/barcode.js' %}"></script>
 
+<style>
+    .pos-page {
+        padding-bottom: 30px;
+    }
 
-<div class="container">
+    .pos-header {
+        margin-bottom: 24px;
+    }
 
-    <h1>POS Penjualan</h1>
+    .pos-header h1 {
+        margin-bottom: 4px;
+        font-weight: 700;
+        color: #171717;
+    }
 
+    .pos-header p {
+        margin: 0;
+        color: #667085;
+    }
 
-    <!-- ================================================= -->
-    <!-- PESAN -->
-    <!-- ================================================= -->
+    .pos-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(380px, 0.85fr);
+        gap: 20px;
+        align-items: start;
+    }
 
-    {% if messages %}
+    .pos-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(20, 20, 20, 0.05);
+        overflow: hidden;
+    }
 
-        {% for message in messages %}
+    .pos-card-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+    }
 
-            <div>
-                {{ message }}
-            </div>
+    .pos-card-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #171717;
+    }
 
-        {% endfor %}
+    .pos-card-header p {
+        margin: 5px 0 0;
+        color: #667085;
+        font-size: 13px;
+    }
 
-    {% endif %}
+    .pos-card-body {
+        padding: 20px 22px;
+    }
 
+    /* Search */
+    .pos-search {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
 
-    <!-- ================================================= -->
-    <!-- PENCARIAN PRODUK -->
-    <!-- ================================================= -->
+    .pos-search input {
+        flex: 1;
+        min-width: 0;
+        height: 42px;
+        padding: 0 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        font-size: 14px;
+        outline: none;
+        transition: .2s ease;
+    }
 
-    <h2>Cari Produk</h2>
+    .pos-search input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
 
-    <form method="get">
+    .pos-search .btn {
+        min-width: 82px;
+    }
 
-        <input
-            type="text"
-            name="search"
-            value="{{ search }}"
-            placeholder="Cari nama, SKU, atau barcode"
-        >
+    /* Barcode Scanner */
+    .barcode-scanner {
+        margin-bottom: 20px;
+        padding: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fafafa;
+    }
 
-        <button type="submit">
-            Cari
-        </button>
+    .barcode-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
 
-    </form>
+    .barcode-input-group input {
+        flex: 1;
+        min-width: 0;
+        height: 42px;
+        padding: 0 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        font-size: 14px;
+        outline: none;
+    }
 
+    .barcode-input-group input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
 
-    <!-- ================================================= -->
-    <!-- BARCODE SCANNER -->
-    <!-- ================================================= -->
+    #barcode-result {
+        margin-top: 10px;
+        font-size: 13px;
+    }
 
-    <div class="barcode-scanner">
+    #barcode-camera {
+        overflow: hidden;
+        border-radius: 10px;
+        background: #000;
+    }
 
-        <input
-            type="text"
-            id="barcode-input"
-            placeholder="Scan atau masukkan barcode"
-            autocomplete="off"
-        >
+    #close-camera-btn {
+        margin-top: 10px;
+    }
 
+    /* Product */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 14px;
+    }
 
-        <button
-            type="button"
-            id="scan-barcode-btn"
-            data-scan-url="{% url 'scan_barcode' %}"
-        >
-            Scan Barcode
-        </button>
+    .product-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 220px;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fff;
+        transition: .2s ease;
+    }
 
+    .product-card:hover {
+        border-color: #fecaca;
+        box-shadow: 0 5px 16px rgba(185, 28, 28, .08);
+        transform: translateY(-2px);
+    }
 
-        <button
-            type="button"
-            id="open-camera-btn"
-        >
-            Scan dengan Kamera
-        </button>
+    .product-card h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        line-height: 1.4;
+        font-weight: 700;
+        color: #171717;
+    }
 
+    .product-code {
+        min-height: 20px;
+        color: #667085;
+        font-size: 12px;
+    }
+
+    .product-price {
+        margin: 14px 0 7px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #b91c1c;
+    }
+
+    .product-stock {
+        margin-bottom: 15px;
+        color: #667085;
+        font-size: 13px;
+    }
+
+    .product-stock strong {
+        color: #171717;
+    }
+
+    .product-card form {
+        margin-top: auto;
+    }
+
+    /* Cart */
+    .cart-empty {
+        padding: 45px 20px;
+        text-align: center;
+        color: #98a2b3;
+    }
+
+    .cart-empty-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 23px;
+    }
+
+    .cart-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f1f3;
+    }
+
+    .cart-row:first-child {
+        padding-top: 0;
+    }
+
+    .cart-product-name {
+        margin-bottom: 4px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .cart-price {
+        color: #667085;
+        font-size: 12px;
+    }
+
+    .cart-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cart-controls .qty {
+        width: 72px;
+        height: 36px;
+        padding: 0 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        text-align: center;
+        outline: none;
+    }
+
+    .cart-controls .qty:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .08);
+    }
+
+    .cart-subtotal {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: flex-end;
+        margin-top: -4px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    /* Checkout */
+    .checkout-form {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #344054;
+    }
+
+    .form-control-pos,
+    .checkout-form select,
+    .checkout-form input {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #fff;
+        color: #171717;
+        font-size: 13px;
+        outline: none;
+        transition: .2s ease;
+    }
+
+    .checkout-form textarea {
+        width: 100%;
+    }
+
+    .checkout-form select:focus,
+    .checkout-form input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .08);
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    /* Summary */
+    .pos-summary {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fafafa;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 7px 0;
+        color: #667085;
+        font-size: 13px;
+    }
+
+    .summary-row strong {
+        color: #171717;
+    }
+
+    .summary-total {
+        margin-top: 8px;
+        padding-top: 12px;
+        border-top: 1px dashed #d1d5db;
+        font-size: 16px;
+    }
+
+    .summary-total strong {
+        color: #b91c1c;
+        font-size: 18px;
+    }
+
+    /* Button */
+    .pos-btn {
+        border: 0;
+        border-radius: 8px;
+        padding: 9px 15px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .pos-btn-primary {
+        background: #b91c1c;
+        color: #fff;
+    }
+
+    .pos-btn-primary:hover {
+        background: #991b1b;
+        color: #fff;
+    }
+
+    .pos-btn-secondary {
+        background: #f3f4f6;
+        color: #344054;
+    }
+
+    .pos-btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .pos-btn-success {
+        background: #16a34a;
+        color: #fff;
+    }
+
+    .pos-btn-success:hover {
+        background: #15803d;
+        color: #fff;
+    }
+
+    .pos-btn-full {
+        width: 100%;
+    }
+
+    .pos-btn-disabled {
+        background: #e5e7eb;
+        color: #98a2b3;
+        cursor: not-allowed;
+    }
+
+    .pos-empty-products {
+        padding: 40px 20px;
+        border: 1px dashed #d1d5db;
+        border-radius: 12px;
+        text-align: center;
+        color: #98a2b3;
+    }
+
+    @media (max-width: 1100px) {
+        .pos-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .pos-card-header,
+        .pos-card-body {
+            padding: 16px;
+        }
+
+        .pos-search {
+            flex-direction: column;
+        }
+
+        .pos-search .btn {
+            width: 100%;
+        }
+
+        .barcode-input-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .barcode-input-group .pos-btn {
+            width: 100%;
+        }
+
+        .product-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-row {
+            grid-template-columns: 1fr;
+        }
+
+        .cart-controls {
+            justify-content: space-between;
+        }
+    }
+</style>
+
+<div class="pos-page">
+
+    <div class="pos-header">
+        <h1>POS Penjualan</h1>
+        <p>Kelola transaksi penjualan dan pembayaran.</p>
     </div>
 
+    {% include "components/messages.html" %}
 
-    <!-- ================================================= -->
-    <!-- HASIL SCAN -->
-    <!-- ================================================= -->
+    <div class="pos-layout">
 
-    <div id="barcode-result"></div>
+        <!-- =========================
+             PRODUK
+        ========================== -->
+        <section class="pos-card">
 
+            <div class="pos-card-header">
+                <h2>Cari Produk</h2>
+                <p>Pilih produk untuk ditambahkan ke keranjang.</p>
+            </div>
 
-    <!-- ================================================= -->
-    <!-- CAMERA -->
-    <!-- ================================================= -->
+            <div class="pos-card-body">
 
-    <div
-        id="barcode-camera"
-        style="
-            display: none;
-            width: 100%;
-            max-width: 500px;
-            margin-top: 15px;
-        "
-    ></div>
+                <form method="get" class="pos-search">
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search }}"
+                        placeholder="Cari nama, SKU, atau barcode..."
+                        autocomplete="off"
+                    >
 
-
-    <!-- ================================================= -->
-    <!-- TUTUP CAMERA -->
-    <!-- ================================================= -->
-
-    <button
-        type="button"
-        id="close-camera-btn"
-        style="display: none;"
-    >
-        Tutup Kamera
-    </button>
-
-
-    <hr>
-
-
-    <!-- ================================================= -->
-    <!-- DAFTAR PRODUK -->
-    <!-- ================================================= -->
-
-    <h2>Daftar Produk</h2>
-
-
-    {% for product in products %}
-
-        <div>
-
-            <h3>
-                {{ product.name }}
-            </h3>
-
-
-            <p>
-                SKU:
-                {{ product.sku }}
-            </p>
-
-
-            <p>
-                Barcode:
-                {{ product.barcode }}
-            </p>
-
-
-            <p>
-                Harga:
-                Rp {{ product.selling_price }}
-            </p>
-
-
-            <p>
-                Stok:
-                {{ product.stock }}
-            </p>
-
-
-            {% if product.stock > 0 %}
-
-                <form
-                    method="post"
-                    action="{% url 'pos_add_to_cart' product.product_id %}"
-                >
-
-                    {% csrf_token %}
-
-                    <button type="submit">
-                        Tambah
+                    <button
+                        type="submit"
+                        class="pos-btn pos-btn-primary"
+                    >
+                        Cari
                     </button>
-
                 </form>
 
-            {% else %}
+                <!-- =========================
+                     BARCODE SCANNER
+                ========================== -->
 
-                <p>
-                    <strong>
-                        Stok habis.
-                    </strong>
-                </p>
+                <div class="barcode-scanner">
 
-            {% endif %}
+                    <div class="barcode-input-group">
 
-        </div>
+                        <input
+                            type="text"
+                            id="barcode-input"
+                            placeholder="Scan atau masukkan barcode..."
+                            autocomplete="off"
+                        >
+
+                        <button
+                            type="button"
+                            id="scan-barcode-btn"
+                            class="pos-btn pos-btn-primary"
+                            data-scan-url="{% url 'scan_barcode' %}"
+                        >
+                            Scan Barcode
+                        </button>
+
+                        <button
+                            type="button"
+                            id="open-camera-btn"
+                            class="pos-btn pos-btn-secondary"
+                        >
+                            Scan dengan Kamera
+                        </button>
+
+                    </div>
+
+                    <div id="barcode-result"></div>
+
+                    <div
+                        id="barcode-camera"
+                        style="
+                            display: none;
+                            width: 100%;
+                            max-width: 500px;
+                            margin-top: 15px;
+                        "
+                    ></div>
+
+                    <button
+                        type="button"
+                        id="close-camera-btn"
+                        class="pos-btn pos-btn-secondary"
+                        style="display: none;"
+                    >
+                        Tutup Kamera
+                    </button>
+
+                </div>
+
+                <div class="product-grid">
+
+                    {% for product in products %}
+
+                    <div class="product-card">
+
+                        <h3>{{ product.name }}</h3>
+
+                        <div class="product-code">
+                            {{ product.sku }}
+
+                            {% if product.barcode %}
+                                · {{ product.barcode }}
+                            {% endif %}
+                        </div>
+
+                        <div class="product-price">
+                            Rp {{ product.selling_price|floatformat:0 }}
+                        </div>
+
+                        <div class="product-stock">
+                            Stok:
+                            <strong>{{ product.stock }}</strong>
+                        </div>
+
+                        {% if product.stock > 0 %}
+
+                            <form
+                                method="post"
+                                action="{% url 'pos_add_to_cart' product.product_id %}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="pos-btn pos-btn-primary pos-btn-full"
+                                >
+                                    Tambah ke Keranjang
+                                </button>
+                            </form>
+
+                        {% else %}
+
+                            <button
+                                type="button"
+                                class="pos-btn pos-btn-disabled pos-btn-full"
+                                disabled
+                            >
+                                Stok Habis
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% empty %}
+
+                    <div class="pos-empty-products">
+                        Produk tidak ditemukan.
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
 
 
-        <hr>
+        <!-- =========================
+             KERANJANG & CHECKOUT
+        ========================== -->
+        <section class="pos-card">
 
-    {% empty %}
+            <div class="pos-card-header">
+                <h2>Keranjang</h2>
+                <p>Periksa item sebelum menyelesaikan transaksi.</p>
+            </div>
 
-        <p>
-            Produk tidak ditemukan.
-        </p>
+            <div class="pos-card-body">
 
-    {% endfor %}
+                {% if cart_items %}
+
+                    {% for item in cart_items %}
+
+                    <div class="cart-row">
+
+                        <div>
+                            <div class="cart-product-name">
+                                {{ item.product.name }}
+                            </div>
+
+                            <div class="cart-price">
+                                Rp {{ item.price|floatformat:0 }} / unit
+                            </div>
+                        </div>
+
+                        <form
+                            method="post"
+                            action="{% url 'pos_update_cart' item.product_id %}"
+                            class="cart-controls"
+                        >
+                            {% csrf_token %}
+
+                            <input
+                                type="number"
+                                name="quantity"
+                                value="{{ item.quantity }}"
+                                min="1"
+                                max="{{ item.product.stock }}"
+                                class="qty"
+                            >
+
+                            <button
+                                type="submit"
+                                class="pos-btn pos-btn-secondary"
+                            >
+                                Update
+                            </button>
+                        </form>
+
+                        <div class="cart-subtotal">
+                            Rp {{ item.subtotal|floatformat:0 }}
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
 
 
-
-    <!-- ================================================= -->
-    <!-- KERANJANG -->
-    <!-- ================================================= -->
-
-    <div id="cart-container">
-
-        <h2>Keranjang</h2>
-
-
-        {% if cart_items %}
-
-
-            {% for item in cart_items %}
-
-                <div
-                    data-product-id="{{ item.product_id }}"
-                    data-barcode="{{ item.product.barcode }}"
-                >
-
-                    <h3>
-                        {{ item.product.name }}
-                    </h3>
-
-
-                    <p>
-                        Harga satuan:
-                        Rp {{ item.price }}
-                    </p>
-
-
-                    <p>
-                        Stok tersedia:
-                        {{ item.product.stock }}
-                    </p>
-
-
-                    <!-- UPDATE QUANTITY -->
+                    <!-- CHECKOUT -->
 
                     <form
                         method="post"
-                        action="{% url 'pos_update_cart' item.product_id %}"
+                        action="{% url 'pos_checkout' %}"
+                        class="checkout-form"
                     >
 
                         {% csrf_token %}
 
+                        <div class="form-group">
+                            <label for="member_id">
+                                Anggota
+                            </label>
 
-                        <label
-                            for="quantity-{{ item.product_id }}"
+                            <select name="member_id" id="member_id">
+
+                                <option value="">
+                                    Pembeli umum
+                                </option>
+
+                                {% for member in members %}
+
+                                <option value="{{ member.id }}">
+                                    {{ member.member_code }} - {{ member.name }}
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+                        </div>
+
+
+                        <div class="checkout-grid">
+
+                            <div class="form-group">
+
+                                <label for="discount">
+                                    Diskon
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="discount"
+                                    name="discount"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                >
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label for="tax">
+                                    Pajak
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="tax"
+                                    name="tax"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="payment_method">
+                                Metode Pembayaran
+                            </label>
+
+                            <select
+                                name="payment_method"
+                                id="payment_method"
+                            >
+
+                                {% for method in payment_methods %}
+
+                                <option value="{{ method }}">
+                                    {{ method }}
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="reference_number">
+                                Nomor Referensi
+                            </label>
+
+                            <input
+                                type="text"
+                                id="reference_number"
+                                name="reference_number"
+                                placeholder="Opsional untuk transfer/QRIS"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="payment_amount">
+                                Jumlah Dibayar
+                            </label>
+
+                            <input
+                                type="number"
+                                id="payment_amount"
+                                name="payment_amount"
+                                min="0"
+                                step="0.01"
+                                required
+                                placeholder="Masukkan jumlah pembayaran"
+                            >
+
+                        </div>
+
+
+                        <!-- SUMMARY -->
+
+                        <div class="pos-summary">
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Subtotal
+                                </span>
+
+                                <strong>
+                                    Rp {{ subtotal|floatformat:0 }}
+                                </strong>
+
+                            </div>
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Diskon
+                                </span>
+
+                                <strong>
+                                    Rp {{ discount|floatformat:0 }}
+                                </strong>
+
+                            </div>
+
+                            <div class="summary-row summary-total">
+
+                                <span>
+                                    Total
+                                </span>
+
+                                <strong>
+                                    Rp {{ total|floatformat:0 }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="pos-btn pos-btn-success pos-btn-full"
                         >
-                            Quantity:
-                        </label>
-
-
-                        <input
-                            id="quantity-{{ item.product_id }}"
-                            type="number"
-                            name="quantity"
-                            value="{{ item.quantity }}"
-                            min="1"
-                            max="{{ item.product.stock }}"
-                            required
-                            data-cart-quantity
-                        >
-
-
-                        <button type="submit">
-                            Update
+                            Selesaikan Transaksi
                         </button>
 
                     </form>
 
+                {% else %}
 
-                    <p>
-                        Subtotal:
+                    <div class="cart-empty">
+
+                        <div class="cart-empty-icon">
+                            🛒
+                        </div>
 
                         <strong>
-                            Rp {{ item.subtotal }}
+                            Keranjang masih kosong
                         </strong>
-                    </p>
 
-                </div>
+                        <div style="margin-top: 5px;">
+                            Pilih produk di sebelah kiri untuk memulai transaksi.
+                        </div>
 
+                    </div>
 
-                <hr>
+                {% endif %}
 
-            {% endfor %}
+            </div>
 
-
-
-            <!-- ========================================= -->
-            <!-- RINGKASAN PEMBAYARAN -->
-            <!-- ========================================= -->
-
-            <h2>
-                Ringkasan Pembayaran
-            </h2>
-
-
-            <p>
-                Subtotal:
-
-                <strong>
-                    Rp {{ subtotal }}
-                </strong>
-            </p>
-
-
-            <p>
-                Diskon:
-
-                <strong>
-                    Rp {{ discount }}
-                </strong>
-            </p>
-
-
-            <p>
-                Total:
-
-                <strong>
-                    Rp {{ total }}
-                </strong>
-            </p>
-
-
-
-            <!-- ========================================= -->
-            <!-- FORM PEMBAYARAN -->
-            <!-- ========================================= -->
-
-            <h2>
-                Pembayaran
-            </h2>
-
-
-            <form
-                method="post"
-                action="{% url 'pos_checkout' %}"
-            >
-
-                {% csrf_token %}
-
-
-                <label for="payment_amount">
-                    Jumlah Pembayaran:
-                </label>
-
-
-                <input
-                    id="payment_amount"
-                    type="number"
-                    name="payment_amount"
-                    min="0"
-                    step="0.01"
-                    required
-                >
-
-
-                <button type="submit">
-                    Bayar
-                </button>
-
-            </form>
-
-
-
-            <!-- ========================================= -->
-            <!-- HASIL PEMBAYARAN -->
-            <!-- ========================================= -->
-
-            {% if payment_success %}
-
-                <hr>
-
-
-                <h2>
-                    Detail Pembayaran
-                </h2>
-
-
-                <p>
-                    Total:
-
-                    <strong>
-                        Rp {{ total }}
-                    </strong>
-                </p>
-
-
-                <p>
-                    Dibayar:
-
-                    <strong>
-                        Rp {{ payment_amount }}
-                    </strong>
-                </p>
-
-
-                <p>
-                    Kembalian:
-
-                    <strong>
-                        Rp {{ change }}
-                    </strong>
-                </p>
-
-            {% endif %}
-
-
-        {% else %}
-
-
-            <p>
-                Keranjang masih kosong.
-            </p>
-
-
-        {% endif %}
+        </section>
 
     </div>
 
-
 </div>
-
 
 {% endblock %}

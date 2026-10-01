@@ -1,106 +1,466 @@
 {% extends "base.html" %}
 
+{% block title %}Riwayat Penjualan{% endblock %}
+
 {% block content %}
 
-<div class="container">
+<style>
+    .sales-history-page {
+        padding-bottom: 30px;
+    }
 
-    <h1>Riwayat Penjualan</h1>
+    .sales-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
 
+    .sales-header h1 {
+        margin: 0 0 5px;
+        color: #171717;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .sales-header p {
+        margin: 0;
+        color: #667085;
+        font-size: 14px;
+    }
+
+    /* Alert */
+    .sales-alert {
+        margin-bottom: 20px;
+        padding: 12px 15px;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 13px;
+    }
+
+    /* Main Card */
+    .sales-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(20, 20, 20, 0.05);
+        overflow: hidden;
+    }
+
+    .sales-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sales-card-header h2 {
+        margin: 0;
+        color: #171717;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .sales-count {
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sales-card-body {
+        padding: 0;
+    }
+
+    /* Table */
+    .sales-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .sales-table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: collapse;
+    }
+
+    .sales-table th {
+        padding: 13px 14px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #475467;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .sales-table td {
+        padding: 14px;
+        border-bottom: 1px solid #f0f1f3;
+        color: #344054;
+        font-size: 13px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .sales-table tbody tr {
+        transition: .15s ease;
+    }
+
+    .sales-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .sales-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .number-column {
+        width: 45px;
+        text-align: center !important;
+    }
+
+    .invoice-number {
+        color: #b91c1c;
+        font-weight: 700;
+    }
+
+    .date-cell {
+        color: #667085;
+    }
+
+    .money {
+        white-space: nowrap;
+    }
+
+    .total-cell {
+        color: #171717 !important;
+        font-size: 14px !important;
+        font-weight: 700;
+    }
+
+    /* Status */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* Action */
+    .detail-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 7px 12px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        background: #fff;
+        color: #b91c1c;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .detail-btn:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #991b1b;
+    }
+
+    /* Empty State */
+    .sales-empty {
+        padding: 60px 20px;
+        text-align: center;
+        color: #667085;
+    }
+
+    .empty-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 25px;
+    }
+
+    .sales-empty strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #344054;
+        font-size: 15px;
+    }
+
+    .sales-empty span {
+        font-size: 13px;
+    }
+
+    /* Bottom Actions */
+    .sales-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .sales-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 9px 16px;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+    .sales-btn-primary {
+        background: #b91c1c;
+        color: #fff;
+    }
+
+    .sales-btn-primary:hover {
+        background: #991b1b;
+        color: #fff;
+    }
+
+    .sales-btn-secondary {
+        background: #fff;
+        border-color: #d1d5db;
+        color: #344054;
+    }
+
+    .sales-btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        color: #171717;
+    }
+
+    @media (max-width: 600px) {
+        .sales-header {
+            flex-direction: column;
+        }
+
+        .sales-header h1 {
+            font-size: 24px;
+        }
+
+        .sales-card-header {
+            padding: 16px;
+        }
+
+        .sales-actions {
+            flex-direction: column;
+        }
+
+        .sales-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div class="sales-history-page">
+
+    <!-- HEADER -->
+    <div class="sales-header">
+
+        <div>
+            <h1>Riwayat Penjualan</h1>
+            <p>Daftar transaksi penjualan yang telah dilakukan.</p>
+        </div>
+
+    </div>
+
+
+    <!-- MESSAGES -->
     {% if messages %}
         {% for message in messages %}
-            <div>
+            <div class="sales-alert">
                 {{ message }}
             </div>
         {% endfor %}
     {% endif %}
 
-    <hr>
 
-    {% if sales %}
+    <!-- SALES TABLE -->
+    <section class="sales-card">
 
-        <table border="1" cellpadding="8" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>No. Invoice</th>
-                    <th>Tanggal</th>
-                    <th>Subtotal</th>
-                    <th>Diskon</th>
-                    <th>Total</th>
-                    <th>Pembayaran</th>
-                    <th>Kembalian</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
+        <div class="sales-card-header">
 
-            <tbody>
-                {% for sale in sales %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
+            <h2>Daftar Transaksi</h2>
 
-                        <td>
-                            {{ sale.invoiceNumber }}
-                        </td>
+            {% if sales %}
+                <span class="sales-count">
+                    {{ sales|length }} Transaksi
+                </span>
+            {% endif %}
 
-                        <td>
-                            {{ sale.saleDate|date:"d-m-Y H:i" }}
-                        </td>
+        </div>
 
-                        <td>
-                            Rp {{ sale.subtotal|floatformat:0 }}
-                        </td>
 
-                        <td>
-                            Rp {{ sale.discount|floatformat:0 }}
-                        </td>
+        <div class="sales-card-body">
 
-                        <td>
-                            <strong>
-                                Rp {{ sale.total|floatformat:0 }}
-                            </strong>
-                        </td>
+            {% if sales %}
 
-                        <td>
-                            Rp {{ sale.payment|floatformat:0 }}
-                        </td>
+                <div class="sales-table-wrap">
 
-                        <td>
-                            Rp {{ sale.change|floatformat:0 }}
-                        </td>
+                    <table class="sales-table">
 
-                        <td>
-                            {{ sale.status }}
-                        </td>
+                        <thead>
+                            <tr>
+                                <th class="number-column">No</th>
+                                <th>No. Invoice</th>
+                                <th>Tanggal</th>
+                                <th>Subtotal</th>
+                                <th>Diskon</th>
+                                <th>Total</th>
+                                <th>Pembayaran</th>
+                                <th>Kembalian</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
 
-                        <td>
-                            <a href="{% url 'sale_detail' sale.sale_id %}">
-                                Lihat Detail
-                            </a>
-                            
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
 
-    {% else %}
+                        <tbody>
 
-        <p>Belum ada transaksi penjualan.</p>
+                            {% for sale in sales %}
 
-    {% endif %}
+                            <tr>
 
-    <br>
+                                <td class="number-column">
+                                    {{ forloop.counter }}
+                                </td>
 
-    <hr>
 
-    <a href="{% url 'returns_history' %}">
-        Riwayat Retur Penjualan
-    </a>
+                                <td>
+                                    <span class="invoice-number">
+                                        {{ sale.invoiceNumber }}
+                                    </span>
+                                </td>
 
-    <a href="{% url 'pos' %}">
-        Kembali ke POS
-    </a>
+
+                                <td class="date-cell">
+                                    {{ sale.saleDate|date:"d-m-Y H:i" }}
+                                </td>
+
+
+                                <td class="money">
+                                    Rp {{ sale.subtotal|floatformat:0 }}
+                                </td>
+
+
+                                <td class="money">
+                                    Rp {{ sale.discount|floatformat:0 }}
+                                </td>
+
+
+                                <td class="money total-cell">
+                                    Rp {{ sale.total|floatformat:0 }}
+                                </td>
+
+
+                                <td class="money">
+                                    Rp {{ sale.payment|floatformat:0 }}
+                                </td>
+
+
+                                <td class="money">
+                                    Rp {{ sale.change|floatformat:0 }}
+                                </td>
+
+
+                                <td>
+                                    <span class="status-badge">
+                                        {{ sale.status }}
+                                    </span>
+                                </td>
+
+
+                                <td>
+                                    <a
+                                        href="{% url 'sale_detail' sale.sale_id %}"
+                                        class="detail-btn"
+                                    >
+                                        Lihat Detail
+                                    </a>
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="sales-empty">
+
+                    <div class="empty-icon">
+                        🧾
+                    </div>
+
+                    <strong>Belum ada transaksi penjualan</strong>
+
+                    <span>
+                        Transaksi yang sudah selesai akan muncul di halaman ini.
+                    </span>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ACTIONS -->
+    <div class="sales-actions">
+
+        <a
+            href="{% url 'returns_history' %}"
+            class="sales-btn sales-btn-secondary"
+        >
+            Riwayat Retur Penjualan
+        </a>
+
+        <a
+            href="{% url 'pos' %}"
+            class="sales-btn sales-btn-primary"
+        >
+            + Kembali ke POS
+        </a>
+
+    </div>
 
 </div>
 

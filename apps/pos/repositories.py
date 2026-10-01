@@ -9,7 +9,7 @@ class PosProductRepository:
         self.products = self.db["products"]
 
     def search_products(self, search=""):
-        query = {}
+        query = {"status": {"$in": ["active", True]}}
 
         if search:
             query["$or"] = [

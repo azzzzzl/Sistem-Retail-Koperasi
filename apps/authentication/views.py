@@ -1,17 +1,26 @@
 from django.contrib import messages
+from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, HttpResponseForbidden
 from .decorators import (login_required_custom, role_required, permission_required_custom)
 from .services import AuthenticationService
 from .repositories import UserRepository
 from .audit_service import AuditLogService
-from django.http import HttpResponseForbidden
 from .constants import ROLES
+
+from apps.reports.services import ReportService
 
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
+        client_ip = request.META.get("REMOTE_ADDR", "unknown")
+        rate_key = f"login-attempts:{client_ip}:{username.lower()}"
+        failed_attempts = int(cache.get(rate_key, 0) or 0)
+
+        if failed_attempts >= 5:
+            messages.error(request, "Terlalu banyak percobaan login. Coba lagi beberapa menit lagi.")
+            return render(request, "authentication/login.html")
 
         if not username or not password:
             messages.error(
@@ -32,6 +41,7 @@ def login_view(request):
         )
 
         if error:
+            cache.set(rate_key, failed_attempts + 1, timeout=600)
             messages.error(request, error)
 
             return render(
@@ -39,6 +49,7 @@ def login_view(request):
                 "authentication/login.html"
             )
 
+        cache.delete(rate_key)
         request.session["user_id"] = str(user["_id"])
         request.session["username"] = user["username"]
         request.session["name"] = user["name"]
@@ -52,6 +63,9 @@ def login_view(request):
             description="User berhasil login.",
             target_type="user",
             target_id=str(user["_id"]),
+            module="authentication",
+            reference_id=str(user["_id"]),
+            after={"username": user.get("username"), "role": user.get("role")},
         )
 
         return redirect("/dashboard/")
@@ -72,6 +86,8 @@ def logout_view(request):
         description="User berhasil logout.",
         target_type="user",
         target_id=request.session.get("user_id"),
+        module="authentication",
+        reference_id=request.session.get("user_id"),
     )
 
     request.session.flush()
@@ -85,6 +101,12 @@ def dashboard_view(request):
         "name": request.session.get("name"),
         "role": request.session.get("role"),
     }
+    try:
+        role = request.session.get("role")
+        if role in {"Admin", "Pengurus"}:
+            context["analytics"] = ReportService().dashboard(low_stock_threshold=5)
+    except Exception as exc:
+        context["dashboard_error"] = f"Analytics belum dapat dimuat: {exc}"
 
     return render(
         request,
@@ -218,6 +240,7 @@ def user_list_view(request):
         }
     )
 
+@permission_required_custom("user_management")
 def user_create_view(request):
     if not request.session.get("user_id"):
         return redirect("/login/")
@@ -245,6 +268,10 @@ def user_create_view(request):
                 "authentication/users/create.html",
                 {"roles": ROLES}
             )
+
+        if role not in ROLES:
+            messages.error(request, "Role tidak valid.")
+            return render(request, "authentication/users/create.html", {"roles": ROLES})
 
         service = AuthenticationService()
 
@@ -566,83 +593,6 @@ def user_role_view(request, user_id):
             "user": user,
             "roles": ROLES,
         },
-    )
-
-@login_required_custom
-def dashboard_view(request):
-    role = request.session.get("role")
-    name = request.session.get("name")
-    username = request.session.get("username")
-
-    dashboard_data = {
-        "Admin": {
-            "title": "Dashboard Admin",
-            "description": "Kelola pengguna, produk, supplier, transaksi, inventori, dan laporan.",
-            "features": [
-                "Manajemen User",
-                "Manajemen Produk",
-                "Manajemen Kategori",
-                "Manajemen Supplier",
-                "Manajemen Anggota",
-                "Penjualan",
-                "Pengadaan",
-                "Inventori",
-                "Laporan",
-                "Audit Log",
-            ],
-        },
-        "Kasir": {
-            "title": "Dashboard Kasir",
-            "description": "Kelola transaksi penjualan dan pembayaran.",
-            "features": [
-                "Pencarian Produk",
-                "Penjualan",
-                "Pembayaran",
-                "Riwayat Transaksi",
-            ],
-        },
-        "Pengurus": {
-            "title": "Dashboard Pengurus",
-            "description": "Kelola pengadaan, penerimaan barang, inventori, supplier, anggota, dan laporan.",
-            "features": [
-                "Pengadaan",
-                "Penerimaan Barang",
-                "Inventori",
-                "Manajemen Supplier",
-                "Manajemen Anggota",
-                "Laporan",
-            ],
-        },
-        "Anggota": {
-            "title": "Dashboard Anggota",
-            "description": "Akses informasi profil dan transaksi pribadi.",
-            "features": [
-                "Profil",
-                "Transaksi Saya",
-            ],
-        },
-    }
-
-    current_dashboard = dashboard_data.get(
-        role,
-        {
-            "title": "Dashboard",
-            "description": "Selamat datang di sistem koperasi.",
-            "features": [],
-        }
-    )
-
-    context = {
-        "name": name,
-        "username": username,
-        "role": role,
-        "dashboard": current_dashboard,
-    }
-
-    return render(
-        request,
-        "dashboard/dashboard.html",
-        context,
     )
 
 @permission_required_custom("procurement")

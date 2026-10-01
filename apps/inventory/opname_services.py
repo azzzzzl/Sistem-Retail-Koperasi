@@ -163,29 +163,31 @@ class StockOpnameService:
                 "yang dapat disetujui."
             )
 
-        for item in opname.get("items", []):
-            difference = item.get(
-                "difference",
-                0
-            )
-
-            if difference == 0:
-                continue
-
-            self.stock_movement_service.create_movement(
-                product_id=item["productId"],
-                movement_type="ADJUSTMENT",
-                quantity=abs(difference),
-                reference_type="STOCK_OPNAME",
-                reference_id=str(opname["_id"]),
-                notes=(
-                    f"Stock opname {opname['opnameNumber']}: "
-                    f"{item['systemStock']} -> "
-                    f"{item['physicalStock']}"
-                ),
-                created_by=approved_by,
-                adjustment_quantity=difference,
-            )
+        movements = []
+        try:
+            for item in opname.get("items", []):
+                current_stock = self.stock_movement_service.get_current_stock(item["productId"])
+                physical_stock = int(item.get("physicalStock", 0))
+                difference = physical_stock - current_stock
+                if difference == 0:
+                    continue
+                movements.append(self.stock_movement_service.create_movement(
+                    product_id=item["productId"],
+                    movement_type="ADJUSTMENT",
+                    quantity=abs(difference),
+                    reference_type="STOCK_OPNAME",
+                    reference_id=str(opname["_id"]),
+                    notes=f"Stock opname {opname['opnameNumber']}: {current_stock} -> {physical_stock}",
+                    created_by=approved_by,
+                    adjustment_quantity=difference,
+                ))
+        except Exception:
+            for movement in reversed(movements):
+                try:
+                    self.stock_movement_service.repository.rollback_movement(movement)
+                except Exception:
+                    pass
+            raise
 
         return self.repository.update(
             opname_id,

@@ -4,22 +4,10 @@ from .repositories import StockMovementRepository
 
 
 class StockMovementService:
-    """
-    Service untuk business logic Stock Movement.
-    """
-
-    MOVEMENT_TYPES = {
-        "IN",
-        "OUT",
-        "ADJUSTMENT",
-    }
-
+    MOVEMENT_TYPES = {"IN", "OUT", "ADJUSTMENT"}
     REFERENCE_TYPES = {
-        "GOODS_RECEIPT",
-        "SALE",
-        "STOCK_OPNAME",
-        "STOCK_ADJUSTMENT",
-        "OTHER",
+        "GOODS_RECEIPT", "SALE", "STOCK_OPNAME", "STOCK_ADJUSTMENT",
+        "OPENING_BALANCE", "MASTER_DATA", "PURCHASE_RETURN", "SALES_RETURN", "SALE_CANCEL", "OTHER",
     }
 
     def __init__(self):
@@ -36,208 +24,91 @@ class StockMovementService:
         created_by=None,
         adjustment_quantity=None,
     ):
-        """
-        Membuat stock movement baru dan memperbarui products.stock.
-        """
-
-        # ==========================
-        # VALIDASI PRODUCT ID
-        # ==========================
-
         if not product_id:
             raise ValueError("productId wajib diisi.")
-
-        # Pastikan product benar-benar ada
         product = self.repository.get_product(product_id)
-
         if not product:
-            raise ValueError(
-                f"Product dengan ID {product_id} tidak ditemukan."
-            )
+            raise ValueError(f"Product dengan ID {product_id} tidak ditemukan.")
 
-        # ==========================
-        # VALIDASI MOVEMENT TYPE
-        # ==========================
-
-        movement_type = movement_type.upper()
-
+        movement_type = str(movement_type or "").upper()
         if movement_type not in self.MOVEMENT_TYPES:
-            raise ValueError(
-                "movementType harus berupa IN, OUT, atau ADJUSTMENT."
-            )
-
-        # ==========================
-        # VALIDASI QUANTITY
-        # ==========================
+            raise ValueError("movementType harus berupa IN, OUT, atau ADJUSTMENT.")
 
         try:
             quantity = int(quantity)
-        except (TypeError, ValueError):
-            raise ValueError("Quantity harus berupa angka.")
-
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Quantity harus berupa angka.") from exc
         if quantity <= 0:
             raise ValueError("Quantity harus lebih besar dari 0.")
 
-        # ==========================
-        # VALIDASI REFERENCE TYPE
-        # ==========================
-
-        reference_type = reference_type.upper()
-
+        reference_type = str(reference_type or "").upper()
         if reference_type not in self.REFERENCE_TYPES:
-            raise ValueError(
-                "referenceType tidak valid."
-            )
+            raise ValueError("referenceType tidak valid.")
 
-        # ==========================
-        # AMBIL STOCK AKTUAL
-        # ==========================
-
-        current_stock = product.get("stock", 0)
-
-        try:
-            current_stock = int(current_stock)
-        except (TypeError, ValueError):
-            raise ValueError(
-                "Stock produk harus berupa angka."
-            )
-
-        if current_stock < 0:
-            raise ValueError(
-                "Stock produk tidak boleh negatif."
-            )
-
-        # ==========================
-        # HITUNG STOCK BARU
-        # ==========================
-
-        if movement_type == "IN":
-
-            new_stock = current_stock + quantity
-
-        elif movement_type == "OUT":
-
-            if quantity > current_stock:
-                raise ValueError(
-                    f"Stok tidak mencukupi. "
-                    f"Stok tersedia: {current_stock}."
-                )
-
-            new_stock = current_stock - quantity
-
-        else:
-            # ADJUSTMENT
+        if movement_type == "ADJUSTMENT":
             if adjustment_quantity is None:
-                raise ValueError(
-                    "adjustmentQuantity wajib diisi untuk adjustment."
-                )
-
+                raise ValueError("adjustmentQuantity wajib diisi untuk adjustment.")
             try:
                 adjustment_quantity = int(adjustment_quantity)
-            except (TypeError, ValueError):
-                raise ValueError(
-                    "adjustmentQuantity harus berupa angka."
-                )
+            except (TypeError, ValueError) as exc:
+                raise ValueError("adjustmentQuantity harus berupa angka.") from exc
+            if adjustment_quantity == 0:
+                raise ValueError("adjustmentQuantity tidak boleh 0.")
+            delta = adjustment_quantity
+        elif movement_type == "IN":
+            delta = quantity
+        else:
+            delta = -quantity
 
-            new_stock = current_stock + adjustment_quantity
+        result = self.repository.apply_stock_change(product_id, delta)
+        if not result:
+            if delta < 0:
+                raise ValueError("Stok tidak mencukupi atau produk tidak ditemukan.")
+            raise ValueError("Gagal memperbarui stok produk.")
 
-            if new_stock < 0:
-                raise ValueError(
-                    "Hasil adjustment tidak boleh membuat stok negatif."
-                )
-
-        # ==========================
-        # DATA MOVEMENT
-        # ==========================
-
+        before_stock = result["beforeStock"]
+        after_stock = result["afterStock"]
+        now = datetime.now(timezone.utc)
         movement_data = {
-            "productId": product_id,
+            "productId": str(product_id),
             "movementType": movement_type,
             "quantity": quantity,
-            "beforeStock": current_stock,
-            "afterStock": new_stock,
+            "beforeStock": before_stock,
+            "afterStock": after_stock,
             "referenceType": reference_type,
-            "referenceId": reference_id,
+            "referenceId": str(reference_id) if reference_id is not None else None,
             "notes": notes,
             "createdBy": created_by,
-            "createdAt": datetime.now(timezone.utc),
+            "createdAt": now,
         }
-
         if movement_type == "ADJUSTMENT":
             movement_data["adjustmentQuantity"] = adjustment_quantity
 
-        # ==========================
-        # UPDATE PRODUCT STOCK
-        # ==========================
-
-        update_result = self.repository.update_product_stock(
-            product_id,
-            new_stock
-        )
-
-        if not update_result:
-            raise ValueError(
-                "Gagal memperbarui stok produk."
-            )
-
-        if update_result.matched_count == 0:
-            raise ValueError(
-                f"Product dengan ID {product_id} tidak ditemukan."
-            )
-
-        # ==========================
-        # SIMPAN STOCK MOVEMENT
-        # ==========================
-
         try:
             return self.repository.create(movement_data)
-
         except Exception:
-            # Rollback stock jika movement gagal disimpan
-            self.repository.update_product_stock(
-                product_id,
-                current_stock
-            )
-
+            rollback = self.repository.restore_stock(product_id, after_stock, before_stock)
+            if not rollback or getattr(rollback, "modified_count", 0) != 1:
+                raise RuntimeError(
+                    "Stock movement gagal disimpan dan rollback stok juga gagal; periksa stok produk."
+                )
             raise
 
     def get_all_movements(self):
-        """
-        Mengambil semua stock movement.
-        """
-
         return self.repository.find_all()
 
     def get_movement_by_id(self, movement_id):
-        """
-        Mengambil satu movement berdasarkan ID.
-        """
-
         return self.repository.find_by_id(movement_id)
 
     def get_product_movements(self, product_id):
-        """
-        Mengambil histori movement suatu produk.
-        """
-
         if not product_id:
             raise ValueError("productId wajib diisi.")
-
         return self.repository.find_by_product(product_id)
 
     def get_current_stock(self, product_id):
-        """
-        Mengambil saldo stok aktual dari products.stock.
-        """
-
         if not product_id:
             raise ValueError("productId wajib diisi.")
-
         stock = self.repository.get_product_stock(product_id)
-
         if stock is None:
-            raise ValueError(
-                f"Product dengan ID {product_id} tidak ditemukan."
-            )
-
-        return stock
+            raise ValueError(f"Product dengan ID {product_id} tidak ditemukan.")
+        return int(stock)

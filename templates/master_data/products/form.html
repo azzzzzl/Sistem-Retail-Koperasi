@@ -1,104 +1,462 @@
 {% extends "base.html" %}
 
+{% block title %}
+    {% if product %}Edit Produk{% else %}Tambah Produk{% endif %} - KOPERA
+{% endblock %}
+
 {% block content %}
 
-<div class="container mt-4">
+<div class="page-header">
 
-    <h2>
-        {% if product %}
-        Edit Produk
-        {% else %}
-        Tambah Produk
-        {% endif %}
-    </h2>
+    <div>
+        <div class="breadcrumb">
+            <span>Master Data</span>
+            <span class="breadcrumb-separator">/</span>
+            <span>Produk</span>
+            <span class="breadcrumb-separator">/</span>
 
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-danger">
-        {{ message }}
+            {% if product %}
+                <span>Edit</span>
+            {% else %}
+                <span>Tambah</span>
+            {% endif %}
+        </div>
+
+        <h1>
+            {% if product %}
+                Edit Produk
+            {% else %}
+                Tambah Produk
+            {% endif %}
+        </h1>
+
+        <p class="muted">
+            {% if product %}
+                Perbarui informasi produk yang tersimpan dalam sistem.
+            {% else %}
+                Tambahkan produk baru ke dalam data koperasi.
+            {% endif %}
+        </p>
     </div>
-    {% endfor %}
-    {% endif %}
 
-    <form method="POST">
-
-        {% csrf_token %}
-
-        <div class="mb-3">
-            <label class="form-label">
-                SKU
-            </label>
-
-            <input type="text" name="sku" class="form-control" value="{{ product.sku|default:'' }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">
-                Barcode
-            </label>
-
-            <input type="text" name="barcode" class="form-control" value="{{ product.barcode|default:'' }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">
-                Nama Produk
-            </label>
-
-            <input type="text" name="name" class="form-control" value="{{ product.name|default:'' }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Kategori</label>
-
-            <select name="category_id" class="form-select" required>
-                <option value="">-- Pilih Kategori --</option>
-
-                {% for category in categories %}
-                <option value="{{ category.id }}" {% if product.category_id==category.id %}selected{% endif %}>
-                    {{ category.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">
-                Harga Beli
-            </label>
-
-            <input type="number" name="purchase_price" class="form-control" min="0" step="0.01"
-                value="{{ product.purchase_price|default:'0' }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">
-                Harga Jual
-            </label>
-
-            <input type="number" name="selling_price" class="form-control" min="0" step="0.01"
-                value="{{ product.selling_price|default:'0' }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">
-                Stok
-            </label>
-
-            <input type="number" name="stock" class="form-control" min="0" value="{{ product.stock|default:'0' }}"
-                required>
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-            Simpan
-        </button>
-
-        <a href="{% url 'master_data:product_list' %}" class="btn btn-secondary">
-            Kembali
-        </a>
-
-    </form>
+    <a
+        href="{% url 'master_data:product_list' %}"
+        class="btn btn-secondary"
+    >
+        ← Kembali
+    </a>
 
 </div>
+
+
+<!-- =========================================================
+     ERROR / MESSAGE
+========================================================= -->
+
+{% if messages %}
+
+    <div class="form-messages">
+
+        {% for message in messages %}
+
+            <div class="alert alert-danger">
+                <span class="alert-icon">!</span>
+
+                <div>
+                    {{ message }}
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% endif %}
+
+
+<!-- =========================================================
+     FORM
+========================================================= -->
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <div class="form-layout">
+
+        <!-- =================================================
+             INFORMASI PRODUK
+        ================================================== -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2 class="card-title">
+                        Informasi Produk
+                    </h2>
+
+                    <p class="card-subtitle">
+                        Identitas dasar produk.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <!-- SKU -->
+
+                <div class="form-group">
+
+                    <label for="sku" class="form-label">
+                        SKU
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="sku"
+                        name="sku"
+                        class="form-control"
+                        value="{{ product.sku|default:'' }}"
+                        placeholder="Contoh: ATK-001"
+                        required
+                    >
+
+                    <span class="form-help">
+                        Kode unik untuk mengidentifikasi produk.
+                    </span>
+
+                </div>
+
+
+                <!-- BARCODE -->
+
+                <div class="form-group">
+
+                    <label for="barcode" class="form-label">
+                        Barcode
+                    </label>
+
+                    <input
+                        type="text"
+                        id="barcode"
+                        name="barcode"
+                        class="form-control"
+                        value="{{ product.barcode|default:'' }}"
+                        placeholder="Contoh: 8991234567890"
+                    >
+
+                    <span class="form-help">
+                        Isi barcode jika produk memilikinya.
+                    </span>
+
+                </div>
+
+
+                <!-- NAMA -->
+
+                <div class="form-group form-group-full">
+
+                    <label for="name" class="form-label">
+                        Nama Produk
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="form-control"
+                        value="{{ product.name|default:'' }}"
+                        placeholder="Contoh: Buku Tulis"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- KATEGORI -->
+
+                <div class="form-group">
+
+                    <label for="category_id" class="form-label">
+                        Kategori
+                        <span class="required">*</span>
+                    </label>
+
+                    <select
+                        id="category_id"
+                        name="category_id"
+                        class="form-control"
+                        required
+                    >
+
+                        <option value="">
+                            -- Pilih Kategori --
+                        </option>
+
+                        {% for category in categories %}
+
+                            <option
+                                value="{{ category.id }}"
+                                {% if product.category_id == category.id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ category.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <span class="form-help">
+                        Pilih kategori yang sesuai dengan produk.
+                    </span>
+
+                </div>
+
+
+                <!-- STOK -->
+
+                <div class="form-group">
+
+                    <label for="stock" class="form-label">
+                        Stok
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="number"
+                        id="stock"
+                        name="stock"
+                        class="form-control"
+                        min="0"
+                        value="{{ product.stock|default:'0' }}"
+                        required
+                    >
+
+                    <span class="form-help">
+                        Jumlah stok awal produk.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             HARGA
+        ================================================== -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2 class="card-title">
+                        Harga Produk
+                    </h2>
+
+                    <p class="card-subtitle">
+                        Atur harga beli dan harga jual produk.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <!-- HARGA BELI -->
+
+                <div class="form-group">
+
+                    <label for="purchase_price" class="form-label">
+                        Harga Beli
+                        <span class="required">*</span>
+                    </label>
+
+                    <div class="input-prefix">
+
+                        <span>
+                            Rp
+                        </span>
+
+                        <input
+                            type="number"
+                            id="purchase_price"
+                            name="purchase_price"
+                            class="form-control"
+                            min="0"
+                            step="0.01"
+                            value="{{ product.purchase_price|default:'0' }}"
+                            placeholder="0"
+                            required
+                        >
+
+                    </div>
+
+                    <span class="form-help">
+                        Harga produk saat dibeli dari supplier.
+                    </span>
+
+                </div>
+
+
+                <!-- HARGA JUAL -->
+
+                <div class="form-group">
+
+                    <label for="selling_price" class="form-label">
+                        Harga Jual
+                        <span class="required">*</span>
+                    </label>
+
+                    <div class="input-prefix">
+
+                        <span>
+                            Rp
+                        </span>
+
+                        <input
+                            type="number"
+                            id="selling_price"
+                            name="selling_price"
+                            class="form-control"
+                            min="0"
+                            step="0.01"
+                            value="{{ product.selling_price|default:'0' }}"
+                            placeholder="0"
+                            required
+                        >
+
+                    </div>
+
+                    <span class="form-help">
+                        Harga yang digunakan saat penjualan.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             PERSEDIAAN
+        ================================================== -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2 class="card-title">
+                        Pengaturan Persediaan
+                    </h2>
+
+                    <p class="card-subtitle">
+                        Tentukan jumlah stok minimum untuk produk.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <!-- MINIMUM STOCK -->
+
+                <div class="form-group">
+
+                    <label for="minimum_stock" class="form-label">
+                        Stok Minimum
+                    </label>
+
+                    <input
+                        type="number"
+                        id="minimum_stock"
+                        name="minimum_stock"
+                        class="form-control"
+                        min="0"
+                        value="{{ product.minimumStock|default:0 }}"
+                        placeholder="0"
+                    >
+
+                    <span class="form-help">
+                        Sistem dapat menggunakan nilai ini sebagai batas
+                        peringatan stok rendah.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            {% if product %}
+
+                <div class="info-box">
+
+                    <div class="info-box-icon">
+                        i
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Informasi stok
+                        </strong>
+
+                        <p>
+                            Saat mengedit produk, pastikan perubahan stok
+                            dilakukan sesuai proses inventory yang berlaku.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             ACTION
+        ================================================== -->
+
+        <div class="form-actions">
+
+            <a
+                href="{% url 'master_data:product_list' %}"
+                class="btn btn-secondary"
+            >
+                Batal
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                {% if product %}
+                    Simpan Perubahan
+                {% else %}
+                    Simpan Produk
+                {% endif %}
+            </button>
+
+        </div>
+
+    </div>
+
+</form>
 
 {% endblock %}

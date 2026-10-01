@@ -23,20 +23,8 @@ from .adjustment_views import (
 )
 
 from .po_views import (
-    purchase_order_cancel,
-    purchase_order_create,
-    purchase_order_detail,
-    purchase_order_list,
-    purchase_order_submit,
-)
-
-from .po_views import (
-    purchase_order_approve,
-    purchase_order_cancel,
-    purchase_order_create,
-    purchase_order_detail,
-    purchase_order_list,
-    purchase_order_submit,
+    purchase_order_approve, purchase_order_cancel, purchase_order_create,
+    purchase_order_detail, purchase_order_list, purchase_order_submit,
 )
 
 from .gr_views import (
@@ -71,12 +59,14 @@ from .payment_views import (
     supplier_payment_by_supplier,
 )
 
+from .purchase_return_views import purchase_return_list, purchase_return_create, purchase_return_approve
+
 from .debt_views import (
     supplier_debt_detail,
     supplier_outstanding_invoices,
 )
 
-app_name = "inventory"
+app_name = "inventory_api"
 
 
 urlpatterns = [
@@ -269,11 +259,6 @@ urlpatterns = [
         supplier_invoice_by_purchase,
     ),
     path(
-        "supplier-debt/<str:supplier_id>/",
-        supplier_debt,
-    ),
-
-    path(
     "supplier-payments/",
     supplier_payment_list,
     name="supplier-payment-list",
@@ -309,10 +294,9 @@ urlpatterns = [
     name="supplier-debt-detail",
     ),
 
-    path(
-        "supplier-debt/",
-        supplier_outstanding_invoices,
-        name="supplier-outstanding-invoices",
-    ),
+    path("supplier-debt/", supplier_outstanding_invoices, name="supplier-outstanding-invoices"),
+    path("purchase-returns/", purchase_return_list, name="purchase_return_list"),
+    path("purchase-returns/create/", purchase_return_create, name="purchase_return_create"),
+    path("purchase-returns/<str:return_id>/approve/", purchase_return_approve, name="purchase_return_approve"),
     
 ]

@@ -30,10 +30,11 @@ class StockMovementServiceTestCase(TestCase):
             "stock": 10,
         }
 
-        # Mock hasil update stock
-        self.service.repository.update_product_stock.return_value = (
-            MagicMock(matched_count=1)
-        )
+        self.service.repository.apply_stock_change.side_effect = lambda product_id, delta: {
+            "product": {"_id": product_id, "stock": 10 + delta},
+            "beforeStock": 10,
+            "afterStock": 10 + delta,
+        } if (10 + delta) >= 0 else None
 
     def test_create_stock_in(self):
         self.service.repository.create.side_effect = (
@@ -79,10 +80,7 @@ class StockMovementServiceTestCase(TestCase):
             "GOODS_RECEIPT",
         )
 
-        self.service.repository.update_product_stock.assert_called_once_with(
-            "TEST-PRODUCT-001",
-            20,
-        )
+        self.service.repository.apply_stock_change.assert_called_once_with("TEST-PRODUCT-001", 10)
 
     def test_create_stock_out(self):
         self.service.repository.get_product.return_value = {
@@ -123,16 +121,14 @@ class StockMovementServiceTestCase(TestCase):
             6,
         )
 
-        self.service.repository.update_product_stock.assert_called_once_with(
-            "TEST-PRODUCT-001",
-            6,
-        )
+        self.service.repository.apply_stock_change.assert_called_once_with("TEST-PRODUCT-001", -4)
 
     def test_stock_out_cannot_exceed_stock(self):
         self.service.repository.get_product.return_value = {
             "_id": "TEST-PRODUCT-001",
             "stock": 5,
         }
+        self.service.repository.apply_stock_change.return_value = None
 
         with self.assertRaises(ValueError):
             self.service.create_movement(
@@ -142,7 +138,7 @@ class StockMovementServiceTestCase(TestCase):
                 reference_type="SALE",
             )
 
-        self.service.repository.update_product_stock.assert_not_called()
+        self.service.repository.apply_stock_change.assert_called_once_with("TEST-PRODUCT-001", -6)
 
     def test_quantity_must_be_positive(self):
         self.service.repository.get_product.return_value = {
@@ -221,10 +217,7 @@ class StockMovementServiceTestCase(TestCase):
             8,
         )
 
-        self.service.repository.update_product_stock.assert_called_once_with(
-            "TEST-PRODUCT-001",
-            8,
-        )
+        self.service.repository.apply_stock_change.assert_called_once_with("TEST-PRODUCT-001", 3)
 
     def test_stock_adjustment_cannot_make_negative_stock(self):
         self.service.repository.get_product.return_value = {
@@ -241,7 +234,7 @@ class StockMovementServiceTestCase(TestCase):
                 reference_type="STOCK_ADJUSTMENT",
             )
 
-        self.service.repository.update_product_stock.assert_not_called()
+        self.service.repository.apply_stock_change.assert_not_called()
 
 # ============================================================
 # STOCK OPNAME
@@ -468,6 +461,9 @@ class PurchaseOrderServiceTestCase(TestCase):
         self.service = PurchaseOrderService()
 
         self.service.repository = MagicMock()
+        self.service.master = MagicMock()
+        self.service.master.get_supplier_by_id.return_value = {"_id": "TEST-SUPPLIER-001", "status": "active"}
+        self.service.master.get_product_by_id.return_value = {"_id": "TEST-PRODUCT-001", "name": "Produk Test", "status": "active"}
 
     def test_create_purchase_order(self):
         self.service.repository.find_by_number.return_value = None

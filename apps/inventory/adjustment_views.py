@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 
 from bson import ObjectId
@@ -42,6 +43,7 @@ def serialize_document(document):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def stock_adjustment_list(request):
     try:
         adjustments = (
@@ -67,6 +69,7 @@ def stock_adjustment_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("inventory")
 def stock_adjustment_create(request):
     try:
         body = json.loads(request.body)
@@ -143,6 +146,7 @@ def stock_adjustment_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def stock_adjustment_detail(
     request,
     adjustment_id,
