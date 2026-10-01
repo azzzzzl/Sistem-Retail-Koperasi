@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript"
+></script>
+
+<script src="{% static 'js/barcode.js' %}"></script>
+
+
+<div class="container">
+
+    <h1>POS Penjualan</h1>
+
+
+    <!-- ================================================= -->
+    <!-- PESAN -->
+    <!-- ================================================= -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div>
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- ================================================= -->
+    <!-- PENCARIAN PRODUK -->
+    <!-- ================================================= -->
+
+    <h2>Cari Produk</h2>
+
+    <form method="get">
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Cari nama, SKU, atau barcode"
+        >
+
+        <button type="submit">
+            Cari
+        </button>
+
+    </form>
+
+
+    <!-- ================================================= -->
+    <!-- BARCODE SCANNER -->
+    <!-- ================================================= -->
+
+    <div class="barcode-scanner">
+
+        <input
+            type="text"
+            id="barcode-input"
+            placeholder="Scan atau masukkan barcode"
+            autocomplete="off"
+        >
+
+
+        <button
+            type="button"
+            id="scan-barcode-btn"
+            data-scan-url="{% url 'scan_barcode' %}"
+        >
+            Scan Barcode
+        </button>
+
+
+        <button
+            type="button"
+            id="open-camera-btn"
+        >
+            Scan dengan Kamera
+        </button>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- HASIL SCAN -->
+    <!-- ================================================= -->
+
+    <div id="barcode-result"></div>
+
+
+    <!-- ================================================= -->
+    <!-- CAMERA -->
+    <!-- ================================================= -->
+
+    <div
+        id="barcode-camera"
+        style="
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 15px;
+        "
+    ></div>
+
+
+    <!-- ================================================= -->
+    <!-- TUTUP CAMERA -->
+    <!-- ================================================= -->
+
+    <button
+        type="button"
+        id="close-camera-btn"
+        style="display: none;"
+    >
+        Tutup Kamera
+    </button>
+
+
+    <hr>
+
+
+    <!-- ================================================= -->
+    <!-- DAFTAR PRODUK -->
+    <!-- ================================================= -->
+
+    <h2>Daftar Produk</h2>
+
+
+    {% for product in products %}
+
+        <div>
+
+            <h3>
+                {{ product.name }}
+            </h3>
+
+
+            <p>
+                SKU:
+                {{ product.sku }}
+            </p>
+
+
+            <p>
+                Barcode:
+                {{ product.barcode }}
+            </p>
+
+
+            <p>
+                Harga:
+                Rp {{ product.selling_price }}
+            </p>
+
+
+            <p>
+                Stok:
+                {{ product.stock }}
+            </p>
+
+
+            {% if product.stock > 0 %}
+
+                <form
+                    method="post"
+                    action="{% url 'pos_add_to_cart' product.product_id %}"
+                >
+
+                    {% csrf_token %}
+
+                    <button type="submit">
+                        Tambah
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <p>
+                    <strong>
+                        Stok habis.
+                    </strong>
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <hr>
+
+    {% empty %}
+
+        <p>
+            Produk tidak ditemukan.
+        </p>
+
+    {% endfor %}
+
+
+
+    <!-- ================================================= -->
+    <!-- KERANJANG -->
+    <!-- ================================================= -->
+
+    <div id="cart-container">
+
+        <h2>Keranjang</h2>
+
+
+        {% if cart_items %}
+
+
+            {% for item in cart_items %}
+
+                <div
+                    data-product-id="{{ item.product_id }}"
+                    data-barcode="{{ item.product.barcode }}"
+                >
+
+                    <h3>
+                        {{ item.product.name }}
+                    </h3>
+
+
+                    <p>
+                        Harga satuan:
+                        Rp {{ item.price }}
+                    </p>
+
+
+                    <p>
+                        Stok tersedia:
+                        {{ item.product.stock }}
+                    </p>
+
+
+                    <!-- UPDATE QUANTITY -->
+
+                    <form
+                        method="post"
+                        action="{% url 'pos_update_cart' item.product_id %}"
+                    >
+
+                        {% csrf_token %}
+
+
+                        <label
+                            for="quantity-{{ item.product_id }}"
+                        >
+                            Quantity:
+                        </label>
+
+
+                        <input
+                            id="quantity-{{ item.product_id }}"
+                            type="number"
+                            name="quantity"
+                            value="{{ item.quantity }}"
+                            min="1"
+                            max="{{ item.product.stock }}"
+                            required
+                            data-cart-quantity
+                        >
+
+
+                        <button type="submit">
+                            Update
+                        </button>
+
+                    </form>
+
+
+                    <p>
+                        Subtotal:
+
+                        <strong>
+                            Rp {{ item.subtotal }}
+                        </strong>
+                    </p>
+
+                </div>
+
+
+                <hr>
+
+            {% endfor %}
+
+
+
+            <!-- ========================================= -->
+            <!-- RINGKASAN PEMBAYARAN -->
+            <!-- ========================================= -->
+
+            <h2>
+                Ringkasan Pembayaran
+            </h2>
+
+
+            <p>
+                Subtotal:
+
+                <strong>
+                    Rp {{ subtotal }}
+                </strong>
+            </p>
+
+
+            <p>
+                Diskon:
+
+                <strong>
+                    Rp {{ discount }}
+                </strong>
+            </p>
+
+
+            <p>
+                Total:
+
+                <strong>
+                    Rp {{ total }}
+                </strong>
+            </p>
+
+
+
+            <!-- ========================================= -->
+            <!-- FORM PEMBAYARAN -->
+            <!-- ========================================= -->
+
+            <h2>
+                Pembayaran
+            </h2>
+
+
+            <form
+                method="post"
+                action="{% url 'pos_checkout' %}"
+            >
+
+                {% csrf_token %}
+
+
+                <label for="payment_amount">
+                    Jumlah Pembayaran:
+                </label>
+
+
+                <input
+                    id="payment_amount"
+                    type="number"
+                    name="payment_amount"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+
+
+                <button type="submit">
+                    Bayar
+                </button>
+
+            </form>
+
+
+
+            <!-- ========================================= -->
+            <!-- HASIL PEMBAYARAN -->
+            <!-- ========================================= -->
+
+            {% if payment_success %}
+
+                <hr>
+
+
+                <h2>
+                    Detail Pembayaran
+                </h2>
+
+
+                <p>
+                    Total:
+
+                    <strong>
+                        Rp {{ total }}
+                    </strong>
+                </p>
+
+
+                <p>
+                    Dibayar:
+
+                    <strong>
+                        Rp {{ payment_amount }}
+                    </strong>
+                </p>
+
+
+                <p>
+                    Kembalian:
+
+                    <strong>
+                        Rp {{ change }}
+                    </strong>
+                </p>
+
+            {% endif %}
+
+
+        {% else %}
+
+
+            <p>
+                Keranjang masih kosong.
+            </p>
+
+
+        {% endif %}
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}

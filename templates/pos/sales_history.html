@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Riwayat Penjualan</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    {% if sales %}
+
+        <table border="1" cellpadding="8" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>No. Invoice</th>
+                    <th>Tanggal</th>
+                    <th>Subtotal</th>
+                    <th>Diskon</th>
+                    <th>Total</th>
+                    <th>Pembayaran</th>
+                    <th>Kembalian</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for sale in sales %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>
+                            {{ sale.invoiceNumber }}
+                        </td>
+
+                        <td>
+                            {{ sale.saleDate|date:"d-m-Y H:i" }}
+                        </td>
+
+                        <td>
+                            Rp {{ sale.subtotal|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            Rp {{ sale.discount|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                Rp {{ sale.total|floatformat:0 }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            Rp {{ sale.payment|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            Rp {{ sale.change|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            {{ sale.status }}
+                        </td>
+
+                        <td>
+                            <a href="{% url 'sale_detail' sale.sale_id %}">
+                                Lihat Detail
+                            </a>
+                            
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+
+        <p>Belum ada transaksi penjualan.</p>
+
+    {% endif %}
+
+    <br>
+
+    <hr>
+
+    <a href="{% url 'returns_history' %}">
+        Riwayat Retur Penjualan
+    </a>
+
+    <a href="{% url 'pos' %}">
+        Kembali ke POS
+    </a>
+
+</div>
+
+{% endblock %}
