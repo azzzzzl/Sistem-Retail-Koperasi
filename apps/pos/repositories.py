@@ -31,3 +31,13 @@ class PosProductRepository:
         return self.products.find_one({
             "_id": object_id
         })
+
+    def get_product_by_barcode(self, barcode):
+        barcode = str(barcode).strip()
+
+        if not barcode:
+            return None
+
+        return self.products.find_one({
+            "barcode": barcode
+        })

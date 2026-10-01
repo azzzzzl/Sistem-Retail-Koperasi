@@ -1,8 +1,17 @@
+```html
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}POS Penjualan{% endblock %}
 
 {% block content %}
+
+<script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript"
+></script>
+
+<script src="{% static 'js/barcode.js' %}"></script>
 
 <style>
     .pos-page {
@@ -88,6 +97,52 @@
 
     .pos-search .btn {
         min-width: 82px;
+    }
+
+    /* Barcode Scanner */
+    .barcode-scanner {
+        margin-bottom: 20px;
+        padding: 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fafafa;
+    }
+
+    .barcode-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .barcode-input-group input {
+        flex: 1;
+        min-width: 0;
+        height: 42px;
+        padding: 0 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .barcode-input-group input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
+
+    #barcode-result {
+        margin-top: 10px;
+        font-size: 13px;
+    }
+
+    #barcode-camera {
+        overflow: hidden;
+        border-radius: 10px;
+        background: #000;
+    }
+
+    #close-camera-btn {
+        margin-top: 10px;
     }
 
     /* Product */
@@ -387,6 +442,15 @@
             width: 100%;
         }
 
+        .barcode-input-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .barcode-input-group .pos-btn {
+            width: 100%;
+        }
+
         .product-grid {
             grid-template-columns: 1fr 1fr;
         }
@@ -442,10 +506,71 @@
                         placeholder="Cari nama, SKU, atau barcode..."
                         autocomplete="off"
                     >
-                    <button type="submit" class="pos-btn pos-btn-primary">
+
+                    <button
+                        type="submit"
+                        class="pos-btn pos-btn-primary"
+                    >
                         Cari
                     </button>
                 </form>
+
+                <!-- =========================
+                     BARCODE SCANNER
+                ========================== -->
+
+                <div class="barcode-scanner">
+
+                    <div class="barcode-input-group">
+
+                        <input
+                            type="text"
+                            id="barcode-input"
+                            placeholder="Scan atau masukkan barcode..."
+                            autocomplete="off"
+                        >
+
+                        <button
+                            type="button"
+                            id="scan-barcode-btn"
+                            class="pos-btn pos-btn-primary"
+                            data-scan-url="{% url 'scan_barcode' %}"
+                        >
+                            Scan Barcode
+                        </button>
+
+                        <button
+                            type="button"
+                            id="open-camera-btn"
+                            class="pos-btn pos-btn-secondary"
+                        >
+                            Scan dengan Kamera
+                        </button>
+
+                    </div>
+
+                    <div id="barcode-result"></div>
+
+                    <div
+                        id="barcode-camera"
+                        style="
+                            display: none;
+                            width: 100%;
+                            max-width: 500px;
+                            margin-top: 15px;
+                        "
+                    ></div>
+
+                    <button
+                        type="button"
+                        id="close-camera-btn"
+                        class="pos-btn pos-btn-secondary"
+                        style="display: none;"
+                    >
+                        Tutup Kamera
+                    </button>
+
+                </div>
 
                 <div class="product-grid">
 
@@ -457,6 +582,7 @@
 
                         <div class="product-code">
                             {{ product.sku }}
+
                             {% if product.barcode %}
                                 · {{ product.barcode }}
                             {% endif %}
@@ -593,6 +719,7 @@
                             </label>
 
                             <select name="member_id" id="member_id">
+
                                 <option value="">
                                     Pembeli umum
                                 </option>
@@ -604,6 +731,7 @@
                                 </option>
 
                                 {% endfor %}
+
                             </select>
                         </div>
 
@@ -611,6 +739,7 @@
                         <div class="checkout-grid">
 
                             <div class="form-group">
+
                                 <label for="discount">
                                     Diskon
                                 </label>
@@ -623,9 +752,11 @@
                                     step="0.01"
                                     value="0"
                                 >
+
                             </div>
 
                             <div class="form-group">
+
                                 <label for="tax">
                                     Pajak
                                 </label>
@@ -638,12 +769,14 @@
                                     step="0.01"
                                     value="0"
                                 >
+
                             </div>
 
                         </div>
 
 
                         <div class="form-group">
+
                             <label for="payment_method">
                                 Metode Pembayaran
                             </label>
@@ -662,10 +795,12 @@
                                 {% endfor %}
 
                             </select>
+
                         </div>
 
 
                         <div class="form-group">
+
                             <label for="reference_number">
                                 Nomor Referensi
                             </label>
@@ -676,10 +811,12 @@
                                 name="reference_number"
                                 placeholder="Opsional untuk transfer/QRIS"
                             >
+
                         </div>
 
 
                         <div class="form-group">
+
                             <label for="payment_amount">
                                 Jumlah Dibayar
                             </label>
@@ -693,6 +830,7 @@
                                 required
                                 placeholder="Masukkan jumlah pembayaran"
                             >
+
                         </div>
 
 
@@ -701,24 +839,39 @@
                         <div class="pos-summary">
 
                             <div class="summary-row">
-                                <span>Subtotal</span>
+
+                                <span>
+                                    Subtotal
+                                </span>
+
                                 <strong>
                                     Rp {{ subtotal|floatformat:0 }}
                                 </strong>
+
                             </div>
 
                             <div class="summary-row">
-                                <span>Diskon</span>
+
+                                <span>
+                                    Diskon
+                                </span>
+
                                 <strong>
                                     Rp {{ discount|floatformat:0 }}
                                 </strong>
+
                             </div>
 
                             <div class="summary-row summary-total">
-                                <span>Total</span>
+
+                                <span>
+                                    Total
+                                </span>
+
                                 <strong>
                                     Rp {{ total|floatformat:0 }}
                                 </strong>
+
                             </div>
 
                         </div>
@@ -741,7 +894,9 @@
                             🛒
                         </div>
 
-                        <strong>Keranjang masih kosong</strong>
+                        <strong>
+                            Keranjang masih kosong
+                        </strong>
 
                         <div style="margin-top: 5px;">
                             Pilih produk di sebelah kiri untuk memulai transaksi.
