@@ -5,6 +5,8 @@ from bson import ObjectId
 
 from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 from apps.authentication.decorators import permission_required_custom
 from apps.inventory.services import StockMovementService
@@ -165,6 +167,181 @@ def pos_page(request):
         },
     )
 
+@permission_required_custom("sales")
+def scan_barcode(request):
+    print("=== SCAN BARCODE VIEW TERPANGGIL ===")
+
+    if request.method != "POST":
+        return JsonResponse({
+            "success": False,
+            "message": "Method tidak diizinkan."
+        }, status=405)
+
+    barcode = request.POST.get("barcode", "").strip()
+
+    print("BARCODE:", barcode)
+
+    if not barcode:
+        return JsonResponse({
+            "success": False,
+            "message": "Barcode wajib diisi."
+        }, status=200)
+
+    repository = PosProductRepository()
+
+    product = repository.get_product_by_barcode(barcode)
+
+    print("PRODUCT:", product)
+
+    # =====================================================
+    # BARCODE TIDAK DITEMUKAN
+    # =====================================================
+
+    if not product:
+        return JsonResponse({
+            "success": False,
+            "message": (
+                "Produk dengan barcode tersebut "
+                "tidak ditemukan."
+            )
+        }, status=200)
+
+
+    # =====================================================
+    # CEK STOK
+    # =====================================================
+
+    stock = int(product.get("stock", 0))
+
+    if stock <= 0:
+        return JsonResponse({
+            "success": False,
+            "message": (
+                f"Stok produk "
+                f"{product.get('name')} habis."
+            )
+        }, status=200)
+
+
+    # =====================================================
+    # AMBIL ID PRODUK
+    # =====================================================
+
+    product_id = str(product["_id"])
+
+
+    # =====================================================
+    # AMBIL CART DARI SESSION
+    # =====================================================
+
+    cart = get_cart(request)
+
+    current_quantity = int(
+        cart.get(product_id, {}).get(
+            "quantity",
+            0
+        )
+    )
+
+    new_quantity = current_quantity + 1
+
+
+    # =====================================================
+    # CEK QUANTITY TERHADAP STOK
+    # =====================================================
+
+    if new_quantity > stock:
+        return JsonResponse({
+            "success": False,
+            "message": (
+                f"Stok {product.get('name')} "
+                f"hanya tersedia {stock}."
+            )
+        }, status=200)
+
+
+    # =====================================================
+    # TAMBAHKAN / UPDATE PRODUK DI CART
+    # =====================================================
+
+    cart[product_id] = {
+        "product_id": product_id,
+        "quantity": new_quantity
+    }
+
+    save_cart(request, cart)
+
+
+    # =====================================================
+    # HITUNG ULANG CART
+    # =====================================================
+
+    cart_items, subtotal = build_cart_items(
+        request,
+        repository
+    )
+
+    discount = Decimal("0")
+    total = subtotal - discount
+
+
+    # =====================================================
+    # RENDER INDEX.HTML TERBARU
+    # =====================================================
+    #
+    # Tidak menggunakan _cart.html.
+    #
+    # HTML ini nantinya dikirim ke JavaScript.
+    # JavaScript hanya mengambil #cart-container
+    # dari HTML ini.
+    # =====================================================
+
+    page_html = render_to_string(
+        "pos/index.html",
+        {
+            "products": [],
+            "search": "",
+
+            "cart_items": cart_items,
+
+            "subtotal": subtotal,
+            "discount": discount,
+            "total": total,
+        },
+        request=request
+    )
+
+
+    # =====================================================
+    # RESPONSE
+    # =====================================================
+
+    return JsonResponse({
+        "success": True,
+
+        "message": (
+            f"{product.get('name')} "
+            "berhasil ditambahkan ke keranjang."
+        ),
+
+        "product": {
+            "id": product_id,
+            "name": product.get("name", ""),
+            "sku": product.get("sku", ""),
+            "barcode": product.get("barcode", ""),
+            "selling_price": float(
+                product.get("selling_price", 0)
+            ),
+            "stock": stock,
+        },
+
+        "quantity": new_quantity,
+
+        # HTML terbaru index.html
+        # yang akan diproses oleh barcode.js
+        "page_html": page_html,
+
+    }, status=200)
 
 # =========================================================
 # ADD TO CART

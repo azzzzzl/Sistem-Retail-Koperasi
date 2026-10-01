@@ -10,6 +10,7 @@ from .views import (
     sale_detail,
     sales_return,
     returns_history,
+    scan_barcode,
 )
 
 urlpatterns = [
@@ -62,4 +63,5 @@ urlpatterns = [
         returns_history,
         name="returns_history",
     ),
+    path("scan-barcode/", scan_barcode, name="scan_barcode"),
 ]
