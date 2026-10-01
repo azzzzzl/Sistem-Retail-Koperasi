@@ -1,87 +1,324 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h1>Tambah User</h1>
+<link rel="stylesheet" href="{% static 'css/users.css' %}">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="message">
-            {{ message }}
+<div class="user-page">
+
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="user-page-header">
+
+        <div class="user-page-heading">
+
+            <div class="user-page-eyebrow">
+                USER MANAGEMENT
+            </div>
+
+            <h1 class="user-page-title">
+                Tambah User
+            </h1>
+
+            <p class="user-page-description">
+                Buat akun pengguna baru dan tentukan role aksesnya di sistem KOPERA.
+            </p>
+
         </div>
-    {% endfor %}
-{% endif %}
 
-<form method="POST">
 
-    {% csrf_token %}
+        <div class="user-page-actions">
 
-    <div>
-        <label>Username</label>
-        <input
-            type="text"
-            name="username"
-            required
-        >
+            <a
+                href="{% url 'user_list' %}"
+                class="user-btn user-btn-secondary"
+            >
+                ← Kembali
+            </a>
+
+        </div>
+
     </div>
 
-    <div>
-        <label>Nama</label>
-        <input
-            type="text"
-            name="name"
-            required
-        >
-    </div>
 
-    <div>
-        <label>Email</label>
-        <input
-            type="email"
-            name="email"
-            required
-        >
-    </div>
+    <!-- ==================== MESSAGES ==================== -->
+    {% if messages %}
 
-    <div>
-        <label>Password</label>
-        <input
-            type="password"
-            name="password"
-            required
-        >
-    </div>
+        <div class="user-message-stack">
 
-    <div>
-        <label>Role</label>
+            {% for message in messages %}
 
-        <select name="role" required>
+                <div class="user-alert user-alert-{{ message.tags|default:'info' }}">
 
-            <option value="">
-                -- Pilih Role --
-            </option>
+                    <div class="user-alert-icon">
 
-            {% for role in roles %}
+                        {% if message.tags == "success" %}
+                            ✓
+                        {% elif message.tags == "error" %}
+                            !
+                        {% else %}
+                            i
+                        {% endif %}
 
-                <option value="{{ role }}">
-                    {{ role }}
-                </option>
+                    </div>
+
+                    <div class="user-alert-content">
+                        {{ message }}
+                    </div>
+
+                </div>
 
             {% endfor %}
 
-        </select>
+        </div>
+
+    {% endif %}
+
+
+    <!-- ==================== FORM CARD ==================== -->
+    <div class="user-form-card">
+
+        <!-- FORM HEADER -->
+        <div class="user-form-header">
+
+            <div>
+
+                <h2 class="user-card-title">
+                    Informasi User
+                </h2>
+
+                <p class="user-card-description">
+                    Lengkapi data akun pengguna di bawah ini.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================== FORM ==================== -->
+        <form method="POST" class="user-form">
+
+            {% csrf_token %}
+
+
+            <!-- ==================== DATA AKUN ==================== -->
+            <div class="user-form-section">
+
+                <div class="user-form-section-header">
+
+                    <div class="user-form-section-title">
+                        Data Akun
+                    </div>
+
+                    <div class="user-form-section-description">
+                        Informasi yang digunakan pengguna untuk masuk ke sistem.
+                    </div>
+
+                </div>
+
+
+                <div class="user-form-grid">
+
+                    <!-- USERNAME -->
+                    <div class="user-form-group">
+
+                        <label for="username">
+                            Username
+                            <span class="user-required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Contoh: ahmad"
+                            autocomplete="username"
+                            required
+                        >
+
+                        <div class="user-form-help">
+                            Username digunakan untuk login ke sistem.
+                        </div>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+                    <div class="user-form-group">
+
+                        <label for="email">
+                            Email
+                            <span class="user-required">*</span>
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Contoh: ahmad@email.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                        <div class="user-form-help">
+                            Masukkan alamat email pengguna yang valid.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================== INFORMASI PENGGUNA ==================== -->
+            <div class="user-form-section">
+
+                <div class="user-form-section-header">
+
+                    <div class="user-form-section-title">
+                        Informasi Pengguna
+                    </div>
+
+                    <div class="user-form-section-description">
+                        Data identitas dasar pengguna.
+                    </div>
+
+                </div>
+
+
+                <div class="user-form-grid">
+
+                    <!-- NAMA LENGKAP -->
+                    <div class="user-form-group">
+
+                        <label for="name">
+                            Nama Lengkap
+                            <span class="user-required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="Contoh: Ahmad Fauzan"
+                            autocomplete="name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- ROLE -->
+                    <div class="user-form-group">
+
+                        <label for="role">
+                            Role
+                            <span class="user-required">*</span>
+                        </label>
+
+                        <select
+                            id="role"
+                            name="role"
+                            required
+                        >
+
+                            <option value="">
+                                -- Pilih Role --
+                            </option>
+
+                            {% for role in roles %}
+
+                                <option value="{{ role }}">
+                                    {{ role|title }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <div class="user-form-help">
+                            Role menentukan hak akses pengguna di sistem.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================== KEAMANAN ==================== -->
+            <div class="user-form-section">
+
+                <div class="user-form-section-header">
+
+                    <div class="user-form-section-title">
+                        Keamanan
+                    </div>
+
+                    <div class="user-form-section-description">
+                        Tentukan password awal untuk akun pengguna.
+                    </div>
+
+                </div>
+
+
+                <div class="user-form-grid">
+
+                    <!-- PASSWORD -->
+                    <div class="user-form-group">
+
+                        <label for="password">
+                            Password
+                            <span class="user-required">*</span>
+                        </label>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Masukkan password"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <div class="user-form-help">
+                            Password akan digunakan pengguna saat login pertama kali.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================== FORM FOOTER ==================== -->
+            <div class="user-form-footer">
+
+                <a
+                    href="{% url 'user_list' %}"
+                    class="user-btn user-btn-secondary"
+                >
+                    Batal
+                </a>
+
+                <button
+                    type="submit"
+                    class="user-btn user-btn-primary"
+                >
+                    <span>✓</span>
+                    Simpan User
+                </button>
+
+            </div>
+
+        </form>
+
     </div>
 
-    <button type="submit">
-        Simpan
-    </button>
-
-</form>
-
-<p>
-    <a href="{% url 'user_list' %}">
-        Kembali
-    </a>
-</p>
+</div>
 
 {% endblock %}

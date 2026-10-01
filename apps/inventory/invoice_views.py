@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 
 from django.http import JsonResponse
@@ -28,6 +29,7 @@ def serialize_invoice(invoice):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_invoice_list(request):
     service = SupplierInvoiceService()
 
@@ -45,6 +47,7 @@ def supplier_invoice_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("procurement")
 def supplier_invoice_create(request):
     try:
         data = json.loads(
@@ -105,6 +108,7 @@ def supplier_invoice_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_invoice_detail(
     request,
     invoice_id,
@@ -135,6 +139,7 @@ def supplier_invoice_detail(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_invoice_by_supplier(
     request,
     supplier_id,
@@ -169,6 +174,7 @@ def supplier_invoice_by_supplier(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_invoice_by_purchase(
     request,
     purchase_id,
@@ -203,6 +209,7 @@ def supplier_invoice_by_purchase(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_debt(
     request,
     supplier_id,

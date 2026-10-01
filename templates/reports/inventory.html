@@ -1,0 +1,1018 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan Inventory{% endblock %}
+
+{% block content %}
+
+{% include "reports/_nav.html" %}
+
+<style>
+    .inventory-report-page {
+        padding-bottom: 30px;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .inventory-report-header {
+        margin-bottom: 24px;
+    }
+
+    .inventory-report-header h1 {
+        font-weight: 700;
+        color: #171717;
+        margin-bottom: 6px;
+    }
+
+    .inventory-report-header p {
+        color: #6b7280;
+        margin: 0;
+    }
+
+    /* =========================
+       FILTER
+    ========================= */
+
+    .inventory-filter-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .inventory-filter-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .inventory-filter-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #b91c1c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .inventory-filter-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .inventory-filter-body {
+        padding: 20px;
+    }
+
+    .inventory-filter-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 7px;
+    }
+
+    .inventory-filter-input,
+    .inventory-filter-select {
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        font-size: 14px;
+        padding: 8px 12px;
+        transition: all .2s ease;
+    }
+
+    .inventory-filter-input:focus,
+    .inventory-filter-select:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
+
+    .inventory-filter-button {
+        min-height: 42px;
+        border: none;
+        border-radius: 9px;
+        background: #b91c1c;
+        color: #fff;
+        font-weight: 600;
+        padding: 8px 22px;
+        transition: all .2s ease;
+    }
+
+    .inventory-filter-button:hover {
+        background: #991b1b;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    /* =========================
+       STATISTICS
+    ========================= */
+
+    .inventory-stat-card {
+        height: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+        padding: 18px;
+        transition: all .2s ease;
+    }
+
+    .inventory-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .07);
+    }
+
+    .inventory-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .inventory-stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 19px;
+    }
+
+    .inventory-stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .inventory-stat-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: #171717;
+        line-height: 1.1;
+    }
+
+    .inventory-stat-danger {
+        color: #b91c1c;
+    }
+
+    /* =========================
+       EXPORT
+    ========================= */
+
+    .inventory-action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin: 22px 0 18px;
+    }
+
+    .inventory-action-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .inventory-export-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .inventory-export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 14px;
+        border-radius: 9px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all .2s ease;
+    }
+
+    .inventory-export-btn:hover {
+        border-color: #b91c1c;
+        color: #b91c1c;
+        background: #fef2f2;
+    }
+
+    /* =========================
+       DATA CARD
+    ========================= */
+
+    .inventory-data-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .inventory-data-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .inventory-data-header h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .inventory-data-header span {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    /* =========================
+       TABLE
+    ========================= */
+
+    .inventory-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .inventory-table {
+        width: 100%;
+        min-width: 650px;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+    .inventory-table thead th {
+        background: #f9fafb;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        padding: 13px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .inventory-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #374151;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .inventory-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .inventory-table tbody tr:hover {
+        background: #fafafa;
+    }
+
+    .inventory-sku {
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        background: #f9fafb;
+        padding: 4px 7px;
+        border-radius: 6px;
+    }
+
+    .inventory-product-name {
+        font-weight: 600;
+        color: #171717;
+    }
+
+    .inventory-stock {
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .inventory-minimum {
+        color: #6b7280;
+    }
+
+    /* =========================
+       BADGES
+    ========================= */
+
+    .inventory-badge-low {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .inventory-badge-normal {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #f0fdf4;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .inventory-badge-type {
+        display: inline-flex;
+        padding: 5px 9px;
+        border-radius: 7px;
+        background: #f3f4f6;
+        color: #4b5563;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* =========================
+       EMPTY STATE
+    ========================= */
+
+    .inventory-empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .inventory-empty-icon {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        background: #fef2f2;
+        color: #b91c1c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .inventory-empty-state strong {
+        display: block;
+        color: #374151;
+        margin-bottom: 4px;
+    }
+
+    .inventory-empty-state span {
+        font-size: 13px;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 768px) {
+
+        .inventory-action-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .inventory-export-buttons {
+            width: 100%;
+        }
+
+        .inventory-export-btn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+</style>
+
+
+<div class="container-fluid inventory-report-page">
+
+    <!-- HEADER -->
+    <div class="inventory-report-header">
+        <h1>Laporan Inventory</h1>
+        <p>
+            Pantau kondisi stok, pergerakan inventory, dan hasil stock opname.
+        </p>
+    </div>
+
+
+    <!-- FILTER -->
+    <div class="inventory-filter-card">
+
+        <div class="inventory-filter-header">
+
+            <div class="inventory-filter-icon">
+                <i class="bi bi-funnel"></i>
+            </div>
+
+            <h2 class="inventory-filter-title">
+                Filter Laporan
+            </h2>
+
+        </div>
+
+        <div class="inventory-filter-body">
+
+            <form method="get">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Produk -->
+                    <div class="col-12 col-md-6 col-xl-3">
+
+                        <label class="inventory-filter-label">
+                            Produk
+                        </label>
+
+                        <select
+                            name="product_id"
+                            class="form-select inventory-filter-select"
+                        >
+
+                            <option value="">
+                                Semua Produk
+                            </option>
+
+                            {% for p in products %}
+
+                                <option
+                                    value="{{ p.id }}"
+                                    {% if filters.product_id == p.id %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ p.name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Mulai -->
+                    <div class="col-12 col-md-6 col-xl-2">
+
+                        <label class="inventory-filter-label">
+                            Mulai
+                        </label>
+
+                        <input
+                            type="date"
+                            name="start_date"
+                            value="{{ filters.start_date }}"
+                            class="form-control inventory-filter-input"
+                        >
+
+                    </div>
+
+
+                    <!-- Sampai -->
+                    <div class="col-12 col-md-6 col-xl-2">
+
+                        <label class="inventory-filter-label">
+                            Sampai
+                        </label>
+
+                        <input
+                            type="date"
+                            name="end_date"
+                            value="{{ filters.end_date }}"
+                            class="form-control inventory-filter-input"
+                        >
+
+                    </div>
+
+
+                    <!-- Batas stok -->
+                    <div class="col-12 col-md-6 col-xl-2">
+
+                        <label class="inventory-filter-label">
+                            Batas Stok
+                        </label>
+
+                        <input
+                            type="number"
+                            name="low_stock_threshold"
+                            value="{{ filters.low_stock_threshold|default:'5' }}"
+                            min="0"
+                            class="form-control inventory-filter-input"
+                        >
+
+                    </div>
+
+
+                    <!-- Filter Button -->
+                    <div class="col-12 col-xl-3">
+
+                        <button
+                            type="submit"
+                            class="btn inventory-filter-button w-100"
+                        >
+                            <i class="bi bi-funnel me-1"></i>
+                            Terapkan Filter
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+    <div class="row g-3">
+
+        <!-- Produk -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="inventory-stat-card">
+
+                <div class="inventory-stat-top">
+
+                    <div>
+                        <div class="inventory-stat-label">
+                            Total Produk
+                        </div>
+                    </div>
+
+                    <div class="inventory-stat-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+
+                </div>
+
+                <div class="inventory-stat-value">
+                    {{ report.summary.productCount }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Stok Rendah -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="inventory-stat-card">
+
+                <div class="inventory-stat-top">
+
+                    <div>
+                        <div class="inventory-stat-label">
+                            Stok Rendah
+                        </div>
+                    </div>
+
+                    <div class="inventory-stat-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+
+                </div>
+
+                <div class="inventory-stat-value inventory-stat-danger">
+                    {{ report.summary.lowStockCount }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Movement -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="inventory-stat-card">
+
+                <div class="inventory-stat-top">
+
+                    <div>
+                        <div class="inventory-stat-label">
+                            Stock Movement
+                        </div>
+                    </div>
+
+                    <div class="inventory-stat-icon">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+
+                </div>
+
+                <div class="inventory-stat-value">
+                    {{ report.summary.movementCount }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Opname -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="inventory-stat-card">
+
+                <div class="inventory-stat-top">
+
+                    <div>
+                        <div class="inventory-stat-label">
+                            Stock Opname
+                        </div>
+                    </div>
+
+                    <div class="inventory-stat-icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+
+                </div>
+
+                <div class="inventory-stat-value">
+                    {{ report.summary.opnameCount }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- EXPORT -->
+    <div class="inventory-action-bar">
+
+        <p class="inventory-action-title">
+            Data Inventory
+        </p>
+
+        <div class="inventory-export-buttons">
+
+            <a
+                class="inventory-export-btn"
+                href="{% url 'reports:export' 'inventory' 'xlsx' %}?{{ request.GET.urlencode }}"
+            >
+                <i class="bi bi-file-earmark-excel"></i>
+                Export Excel
+            </a>
+
+            <a
+                class="inventory-export-btn"
+                href="{% url 'reports:export' 'inventory' 'pdf' %}?{{ request.GET.urlencode }}"
+            >
+                <i class="bi bi-file-earmark-pdf"></i>
+                Export PDF
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- STOK SAAT INI -->
+    <div class="inventory-data-card mb-4">
+
+        <div class="inventory-data-header">
+
+            <h2>
+                <i class="bi bi-boxes me-2"></i>
+                Stok Saat Ini
+            </h2>
+
+            <span>
+                {{ report.summary.productCount }} produk
+            </span>
+
+        </div>
+
+        <div class="inventory-table-wrapper">
+
+            <table class="inventory-table">
+
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Produk</th>
+                        <th>Stok</th>
+                        <th>Minimum</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for row in report.stock %}
+
+                        <tr>
+
+                            <td>
+                                <span class="inventory-sku">
+                                    {{ row.sku }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="inventory-product-name">
+                                    {{ row.name }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="inventory-stock">
+                                    {{ row.stock }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="inventory-minimum">
+                                    {{ row.minimumStock }}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                {% if row.lowStock %}
+
+                                    <span class="inventory-badge-low">
+                                        <i class="bi bi-exclamation-circle"></i>
+                                        LOW STOCK
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="inventory-badge-normal">
+                                        <i class="bi bi-check-circle"></i>
+                                        Normal
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="5">
+
+                                <div class="inventory-empty-state">
+
+                                    <div class="inventory-empty-icon">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+
+                                    <strong>
+                                        Tidak ada data stok
+                                    </strong>
+
+                                    <span>
+                                        Belum ada data inventory yang sesuai dengan filter.
+                                    </span>
+
+                                </div>
+
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- MOVEMENT + OPNAME -->
+    <div class="row g-4">
+
+        <!-- STOCK MOVEMENT -->
+        <div class="col-12 col-xl-7">
+
+            <div class="inventory-data-card">
+
+                <div class="inventory-data-header">
+
+                    <h2>
+                        <i class="bi bi-arrow-left-right me-2"></i>
+                        Stock Movement
+                    </h2>
+
+                    <span>
+                        {{ report.summary.movementCount }} movement
+                    </span>
+
+                </div>
+
+                <div class="inventory-table-wrapper">
+
+                    <table class="inventory-table">
+
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Jenis</th>
+                                <th>Qty</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in report.movements %}
+
+                                <tr>
+
+                                    <td>
+                                        <span class="inventory-product-name">
+                                            {{ row.productId }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="inventory-badge-type">
+                                            {{ row.movementType }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ row.quantity }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ row.afterStock }}
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+                                    <td colspan="4">
+
+                                        <div class="inventory-empty-state">
+
+                                            <div class="inventory-empty-icon">
+                                                <i class="bi bi-arrow-left-right"></i>
+                                            </div>
+
+                                            <strong>
+                                                Tidak ada movement
+                                            </strong>
+
+                                            <span>
+                                                Belum ada pergerakan stok pada periode yang dipilih.
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- STOCK OPNAME -->
+        <div class="col-12 col-xl-5">
+
+            <div class="inventory-data-card">
+
+                <div class="inventory-data-header">
+
+                    <h2>
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Stock Opname
+                    </h2>
+
+                    <span>
+                        {{ report.summary.opnameCount }} opname
+                    </span>
+
+                </div>
+
+                <div class="inventory-table-wrapper">
+
+                    <table class="inventory-table">
+
+                        <thead>
+                            <tr>
+                                <th>Nomor</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in report.opnames %}
+
+                                <tr>
+
+                                    <td>
+                                        <span class="inventory-product-name">
+                                            {{ row.opnameNumber }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {{ row.opnameDate }}
+                                    </td>
+
+                                    <td>
+                                        <span class="inventory-badge-type">
+                                            {{ row.status }}
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+                                    <td colspan="3">
+
+                                        <div class="inventory-empty-state">
+
+                                            <div class="inventory-empty-icon">
+                                                <i class="bi bi-clipboard"></i>
+                                            </div>
+
+                                            <strong>
+                                                Tidak ada stock opname
+                                            </strong>
+
+                                            <span>
+                                                Belum ada data stock opname.
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,765 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Dashboard Laporan
+{% endblock %}
+
+{% block content %}
+
+<style>
+    /* =====================================================
+       KOPERA - REPORT DASHBOARD
+       ===================================================== */
+
+    .report-dashboard {
+        width: 100%;
+    }
+
+    /* =====================================================
+       PAGE HEADER
+       ===================================================== */
+
+    .report-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .report-page-eyebrow {
+        margin-bottom: 7px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #667085;
+    }
+
+    .report-page-title {
+        margin: 0;
+        color: #171717;
+        font-size: 30px;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .report-page-description {
+        margin: 8px 0 0;
+        max-width: 720px;
+        color: #667085;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+
+    /* =====================================================
+       FILTER CARD
+       ===================================================== */
+
+    .report-filter-card {
+        margin-bottom: 24px;
+        padding: 22px 24px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(20, 20, 20, 0.04);
+    }
+
+    .report-filter-header {
+        margin-bottom: 18px;
+    }
+
+    .report-filter-title {
+        margin: 0;
+        color: #171717;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .report-filter-description {
+        margin: 5px 0 0;
+        color: #667085;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .report-filter-form {
+        display: grid;
+        grid-template-columns:
+            minmax(150px, 1fr)
+            minmax(150px, 1fr)
+            minmax(150px, 1fr)
+            auto;
+        align-items: end;
+        gap: 16px;
+    }
+
+    .report-form-group {
+        min-width: 0;
+    }
+
+    .report-form-group label {
+        display: block;
+        margin-bottom: 7px;
+        color: #344054;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .report-form-group input {
+        width: 100%;
+        min-height: 42px;
+        box-sizing: border-box;
+        padding: 9px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        outline: none;
+        background: #ffffff;
+        color: #171717;
+        font-family: inherit;
+        font-size: 13px;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .report-form-group input:hover {
+        border-color: #9ca3af;
+    }
+
+    .report-form-group input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+    }
+
+    .report-form-group input::placeholder {
+        color: #98a2b3;
+    }
+
+    .report-filter-action {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .report-filter-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 18px;
+        border: 1px solid #b91c1c;
+        border-radius: 10px;
+        background: #b91c1c;
+        color: #ffffff;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(185, 28, 28, 0.14);
+        transition:
+            background 0.2s ease,
+            border-color 0.2s ease,
+            transform 0.15s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .report-filter-button:hover {
+        background: #991b1b;
+        border-color: #991b1b;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 16px rgba(185, 28, 28, 0.18);
+    }
+
+
+    /* =====================================================
+       ALERT
+       ===================================================== */
+
+    .report-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 24px;
+        padding: 14px 16px;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .report-alert-icon {
+        flex-shrink: 0;
+        font-weight: 800;
+    }
+
+
+    /* =====================================================
+       STATISTICS SECTION
+       ===================================================== */
+
+    .report-section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+    }
+
+    .report-section-title {
+        margin: 0;
+        color: #171717;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .report-section-description {
+        margin: 4px 0 0;
+        color: #667085;
+        font-size: 13px;
+    }
+
+    .report-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .report-stat-card {
+        position: relative;
+        overflow: hidden;
+        min-width: 0;
+        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        box-shadow: 0 5px 18px rgba(20, 20, 20, 0.04);
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    .report-stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #b91c1c;
+    }
+
+    .report-stat-card:hover {
+        transform: translateY(-2px);
+        border-color: #fecaca;
+        box-shadow: 0 9px 24px rgba(20, 20, 20, 0.07);
+    }
+
+    .report-stat-label {
+        margin-bottom: 9px;
+        color: #667085;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .report-stat-value {
+        color: #171717;
+        font-size: 24px;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        word-break: break-word;
+    }
+
+    .report-stat-meta {
+        margin-top: 7px;
+        color: #98a2b3;
+        font-size: 11px;
+    }
+
+
+    /* =====================================================
+       GROUPED STATISTICS
+       ===================================================== */
+
+    .report-stat-group {
+        margin-bottom: 24px;
+    }
+
+    .report-stat-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .report-stat-group-header {
+        margin-bottom: 14px;
+    }
+
+    .report-stat-group-title {
+        margin: 0;
+        color: #171717;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .report-stat-group-description {
+        margin: 4px 0 0;
+        color: #667085;
+        font-size: 12px;
+    }
+
+    .report-stat-group-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media (max-width: 1100px) {
+
+        .report-stats,
+        .report-stat-group-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .report-filter-form {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+
+        .report-filter-action {
+            grid-column: span 2;
+        }
+
+    }
+
+
+    @media (max-width: 768px) {
+
+        .report-page-title {
+            font-size: 25px;
+        }
+
+        .report-filter-card {
+            padding: 20px;
+        }
+
+        .report-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .report-filter-action {
+            grid-column: auto;
+        }
+
+        .report-filter-button {
+            width: 100%;
+        }
+
+        .report-stats,
+        .report-stat-group-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+    }
+
+
+    @media (max-width: 520px) {
+
+        .report-page-title {
+            font-size: 23px;
+        }
+
+        .report-page-description {
+            font-size: 13px;
+        }
+
+        .report-stats,
+        .report-stat-group-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .report-stat-card {
+            padding: 18px;
+        }
+
+        .report-stat-value {
+            font-size: 22px;
+        }
+
+    }
+</style>
+
+
+<div class="report-dashboard">
+
+    <!-- =================================================
+         REPORT NAVIGATION
+         ================================================= -->
+    {% include "reports/_nav.html" %}
+
+
+    <!-- =================================================
+         PAGE HEADER
+         ================================================= -->
+    <div class="report-page-header">
+
+        <div>
+
+            <div class="report-page-eyebrow">
+                REPORTING & ANALYTICS
+            </div>
+
+            <h1 class="report-page-title">
+                Dashboard Laporan
+            </h1>
+
+            <p class="report-page-description">
+                Ringkasan data transaksi dan kondisi operasional
+                berdasarkan data yang tersimpan di MongoDB.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         FILTER
+         ================================================= -->
+    <div class="report-filter-card">
+
+        <div class="report-filter-header">
+
+            <h2 class="report-filter-title">
+                Filter Periode
+            </h2>
+
+            <p class="report-filter-description">
+                Tentukan periode laporan dan batas stok minimum
+                yang ingin digunakan.
+            </p>
+
+        </div>
+
+
+        <form method="get" class="report-filter-form">
+
+            <!-- START DATE -->
+            <div class="report-form-group">
+
+                <label for="start_date">
+                    Mulai
+                </label>
+
+                <input
+                    id="start_date"
+                    type="date"
+                    name="start_date"
+                    value="{{ filters.start_date }}"
+                >
+
+            </div>
+
+
+            <!-- END DATE -->
+            <div class="report-form-group">
+
+                <label for="end_date">
+                    Sampai
+                </label>
+
+                <input
+                    id="end_date"
+                    type="date"
+                    name="end_date"
+                    value="{{ filters.end_date }}"
+                >
+
+            </div>
+
+
+            <!-- LOW STOCK -->
+            <div class="report-form-group">
+
+                <label for="low_stock_threshold">
+                    Batas Stok
+                </label>
+
+                <input
+                    id="low_stock_threshold"
+                    type="number"
+                    name="low_stock_threshold"
+                    value="{{ filters.low_stock_threshold|default:'5' }}"
+                    min="0"
+                >
+
+            </div>
+
+
+            <!-- ACTION -->
+            <div class="report-filter-action">
+
+                <button
+                    type="submit"
+                    class="report-filter-button"
+                >
+                    Terapkan Filter
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =================================================
+         ERROR
+         ================================================= -->
+    {% if error %}
+
+        <div class="report-alert">
+
+            <span class="report-alert-icon">
+                ⚠
+            </span>
+
+            <span>
+                {{ error }}
+            </span>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =================================================
+         REPORT DATA
+         ================================================= -->
+    {% if report %}
+
+        <!-- MASTER DATA -->
+        <div class="report-stat-group">
+
+            <div class="report-stat-group-header">
+
+                <h2 class="report-stat-group-title">
+                    Data Master
+                </h2>
+
+                <p class="report-stat-group-description">
+                    Ringkasan data utama yang tersedia di sistem.
+                </p>
+
+            </div>
+
+
+            <div class="report-stat-group-grid">
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Produk
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.totals.products }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Supplier
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.totals.suppliers }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Anggota
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.totals.members }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Kategori
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.totals.categories }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TRANSACTIONS -->
+        <div class="report-stat-group">
+
+            <div class="report-stat-group-header">
+
+                <h2 class="report-stat-group-title">
+                    Aktivitas Transaksi
+                </h2>
+
+                <p class="report-stat-group-description">
+                    Ringkasan transaksi penjualan dan pembelian
+                    pada periode yang dipilih.
+                </p>
+
+            </div>
+
+
+            <div class="report-stat-group-grid">
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Transaksi Penjualan
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.sales.transactionCount }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Total Penjualan
+                    </div>
+
+                    <div class="report-stat-value">
+                        Rp {{ report.sales.total|floatformat:0 }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Transaksi Pembelian
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.purchases.transactionCount }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Total Pembelian
+                    </div>
+
+                    <div class="report-stat-value">
+                        Rp {{ report.purchases.total|floatformat:0 }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- OPERATIONAL -->
+        <div class="report-stat-group">
+
+            <div class="report-stat-group-header">
+
+                <h2 class="report-stat-group-title">
+                    Kondisi Operasional
+                </h2>
+
+                <p class="report-stat-group-description">
+                    Informasi stok, hutang supplier, dan pengeluaran
+                    berdasarkan data laporan.
+                </p>
+
+            </div>
+
+
+            <div class="report-stat-group-grid">
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Stok Rendah
+                    </div>
+
+                    <div class="report-stat-value">
+                        {{ report.totals.lowStockProducts }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Hutang Supplier
+                    </div>
+
+                    <div class="report-stat-value">
+                        Rp {{ report.supplierDebt|floatformat:0 }}
+                    </div>
+
+                </div>
+
+
+                <div class="report-stat-card">
+
+                    <div class="report-stat-label">
+                        Pengeluaran
+                    </div>
+
+                    <div class="report-stat-value">
+                        Rp {{ report.expenses|floatformat:0 }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

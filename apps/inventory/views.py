@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 
 from bson import ObjectId
@@ -35,6 +36,7 @@ def serialize_document(document):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def stock_movement_list(request):
     """
     GET /inventory/stock-movements/
@@ -63,6 +65,7 @@ def stock_movement_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("inventory")
 def stock_movement_create(request):
     """
     POST /inventory/stock-movements/create/
@@ -127,6 +130,7 @@ def stock_movement_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def stock_movement_detail(request, movement_id):
     """
     GET /inventory/stock-movements/<id>/
@@ -158,6 +162,7 @@ def stock_movement_detail(request, movement_id):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def product_stock(request, product_id):
     """
     GET /inventory/stock/<product_id>/
@@ -190,6 +195,7 @@ def product_stock(request, product_id):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("inventory")
 def product_movement_history(request, product_id):
     """
     GET /inventory/stock-movements/product/<product_id>/

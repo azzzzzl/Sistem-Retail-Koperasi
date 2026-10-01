@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Detail Pengeluaran{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Detail Pengeluaran</h1></div><div><a class="btn" href="{% url 'finance:expense_edit' expense|mongo_id %}">Edit</a> <a class="btn" href="{% url 'finance:expenses' %}">Kembali</a></div></div>
+<div class="card"><div class="grid grid-2"><div><strong>Nomor</strong><p>{{ expense.expenseNumber }}</p><strong>Tanggal</strong><p>{{ expense.date|date:"d/m/Y H:i" }}</p><strong>Kategori</strong><p>{{ expense.category }}</p></div><div><strong>Jumlah</strong><p>Rp {{ expense.amount|floatformat:0 }}</p><strong>Metode</strong><p>{{ expense.paymentMethod }}</p><strong>Referensi</strong><p>{{ expense.referenceNumber|default:"-" }}</p></div></div><strong>Deskripsi</strong><p>{{ expense.description|default:"-" }}</p></div>
+{% endblock %}

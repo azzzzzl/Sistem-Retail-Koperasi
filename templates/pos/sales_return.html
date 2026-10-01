@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Retur Penjualan</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    <h2>Informasi Transaksi</h2>
+
+    <p>
+        <strong>No. Invoice:</strong>
+        {{ sale.invoiceNumber }}
+    </p>
+
+    <p>
+        <strong>Tanggal:</strong>
+        {{ sale.saleDate|date:"d-m-Y H:i" }}
+    </p>
+
+    <p>
+        <strong>Total Transaksi:</strong>
+        Rp {{ sale.total|floatformat:0 }}
+    </p>
+
+    <hr>
+
+    <h2>Produk yang Dibeli</h2>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <table border="1" cellpadding="8" cellspacing="0">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>SKU</th>
+                    <th>Produk</th>
+                    <th>Harga</th>
+                    <th>Qty Dibeli</th>
+                    <th>Qty Retur</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in sale.items %}
+
+                    <tr>
+
+                        <td>
+                            {{ forloop.counter }}
+                        </td>
+
+                        <td>
+                            {{ item.sku }}
+                        </td>
+
+                        <td>
+                            {{ item.name }}
+                        </td>
+
+                        <td>
+                            Rp {{ item.sellingPrice|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            {{ item.quantity }}
+                        </td>
+
+                        <td>
+                            <input
+                                type="number"
+                                name="return_quantity_{{ forloop.counter0 }}"
+                                min="0"
+                                max="{{ item.quantity }}"
+                                value="0"
+                                required
+                            >
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <br>
+        <label>Alasan Retur<br><textarea name="reason" rows="3" style="width:100%;"></textarea></label>
+        <br>
+
+        <button type="submit">
+            Proses Retur
+        </button>
+
+    </form>
+
+    <hr>
+
+    <a href="{% url 'sale_detail' sale.sale_id %}">
+        Kembali ke Detail Transaksi
+    </a>
+
+</div>
+
+{% endblock %}

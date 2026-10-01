@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Anggota{% endblock %}
+
+{% block content %}
+
+<style>
+    .member-detail-page {
+        padding-bottom: 30px;
+    }
+
+    .member-detail-header {
+        background: linear-gradient(135deg, #b91c1c, #991b1b);
+        color: #fff;
+        border-radius: 16px;
+        padding: 28px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 24px rgba(185, 28, 28, 0.15);
+    }
+
+    .member-detail-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .member-code {
+        margin-top: 6px;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .member-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .member-header-actions .btn {
+        border-radius: 9px;
+        font-weight: 600;
+        padding: 9px 18px;
+    }
+
+    .btn-member-edit {
+        background: #fff;
+        color: #991b1b;
+        border: none;
+    }
+
+    .btn-member-edit:hover {
+        background: #fef2f2;
+        color: #7f1d1d;
+    }
+
+    .member-info-card,
+    .member-transactions-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .member-card-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fafafa;
+    }
+
+    .member-card-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .member-info-body {
+        padding: 22px;
+    }
+
+    .member-info-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .member-info-item:first-child {
+        padding-top: 0;
+    }
+
+    .member-info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .member-info-label {
+        display: block;
+        color: #667085;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .member-info-value {
+        color: #171717;
+        font-size: 15px;
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .member-transactions-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .member-transactions-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .btn-view-all {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 7px 13px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn-view-all:hover {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .member-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .member-table {
+        margin: 0;
+        min-width: 650px;
+    }
+
+    .member-table thead th {
+        background: #fafafa;
+        color: #667085;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 14px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .member-table tbody td {
+        padding: 15px 18px;
+        vertical-align: middle;
+        color: #344054;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .member-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .member-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .invoice-number {
+        color: #b91c1c;
+        font-weight: 600;
+    }
+
+    .transaction-total {
+        font-weight: 700;
+        color: #171717;
+        white-space: nowrap;
+    }
+
+    .transaction-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .empty-transactions {
+        padding: 40px 20px !important;
+        text-align: center;
+        color: #98a2b3 !important;
+    }
+
+    @media (max-width: 768px) {
+        .member-detail-header {
+            padding: 22px;
+        }
+
+        .member-detail-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+
+        .member-detail-header h1 {
+            font-size: 23px;
+        }
+
+        .member-transactions-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .btn-view-all {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="container-fluid member-detail-page">
+
+    <!-- Header -->
+    <div class="member-detail-header">
+        <div class="d-flex justify-content-between align-items-center gap-3">
+
+            <div>
+                <h1>{{ member.name }}</h1>
+                <div class="member-code">
+                    Kode Anggota: <strong>{{ member.member_code }}</strong>
+                </div>
+            </div>
+
+            <div class="member-header-actions">
+                <a
+                    href="{% url 'master_data:member_update' member.member_id %}"
+                    class="btn btn-member-edit"
+                >
+                    <i class="bi bi-pencil me-1"></i>
+                    Edit Anggota
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Informasi Anggota -->
+    <div class="member-info-card">
+
+        <div class="member-card-header">
+            <h2>
+                <i class="bi bi-person-vcard me-2"></i>
+                Informasi Anggota
+            </h2>
+        </div>
+
+        <div class="member-info-body">
+
+            <div class="member-info-item">
+                <span class="member-info-label">Nama Anggota</span>
+                <div class="member-info-value">
+                    {{ member.name }}
+                </div>
+            </div>
+
+            <div class="member-info-item">
+                <span class="member-info-label">Kode Anggota</span>
+                <div class="member-info-value">
+                    {{ member.member_code }}
+                </div>
+            </div>
+
+            <div class="member-info-item">
+                <span class="member-info-label">Telepon</span>
+                <div class="member-info-value">
+                    {{ member.phone|default:"-" }}
+                </div>
+            </div>
+
+            <div class="member-info-item">
+                <span class="member-info-label">Email</span>
+                <div class="member-info-value">
+                    {{ member.email|default:"-" }}
+                </div>
+            </div>
+
+            <div class="member-info-item">
+                <span class="member-info-label">Alamat</span>
+                <div class="member-info-value">
+                    {{ member.address|default:"-"|linebreaksbr }}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Transaksi Anggota -->
+    <div class="member-transactions-card">
+
+        <div class="member-transactions-header">
+
+            <h2>
+                <i class="bi bi-receipt me-2"></i>
+                Transaksi Anggota
+            </h2>
+
+            <a
+                href="{% url 'master_data:member_transactions' member.member_id %}"
+                class="btn-view-all"
+            >
+                Lihat Semua
+                <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+
+        </div>
+
+        <div class="member-table-wrapper">
+
+            <table class="table member-table">
+
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for x in sales %}
+
+                    <tr>
+                        <td>
+                            <span class="invoice-number">
+                                {{ x.invoiceNumber }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ x.saleDate|date:"d-m-Y H:i" }}
+                        </td>
+
+                        <td>
+                            <span class="transaction-total">
+                                Rp {{ x.total|floatformat:0 }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="transaction-status">
+                                {{ x.status }}
+                            </span>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="4" class="empty-transactions">
+                            <div class="mb-2">
+                                <i class="bi bi-receipt fs-3"></i>
+                            </div>
+                            Belum ada transaksi anggota.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Struk Penjualan</h1>
+
+    <hr>
+
+    <p>
+        <strong>No. Invoice:</strong>
+        {{ sale.invoiceNumber }}
+    </p>
+
+    <p>
+        <strong>Tanggal:</strong>
+        {{ sale.saleDate }}
+    </p>
+
+    <p>
+        <strong>Kasir:</strong>
+        {{ sale.cashierId }}
+    </p>
+
+    <hr>
+
+    <h2>Detail Barang</h2>
+
+    {% for item in sale.items %}
+        <div>
+            <p>
+                <strong>{{ item.name }}</strong>
+            </p>
+
+            <p>
+                SKU: {{ item.sku }} |
+                Barcode: {{ item.barcode }}
+            </p>
+
+            <p>
+                {{ item.quantity }} x
+                Rp {{ item.sellingPrice }}
+            </p>
+
+            <p>
+                Subtotal:
+                Rp {{ item.subtotal }}
+            </p>
+        </div>
+
+        <hr>
+    {% endfor %}
+
+    <h2>Ringkasan Pembayaran</h2>
+
+    <p>
+        Subtotal:
+        Rp {{ sale.subtotal }}
+    </p>
+
+    <p>
+        Diskon:
+        Rp {{ sale.discount }}
+    </p>
+
+    <p>
+        Pajak:
+        Rp {{ sale.tax }}
+    </p>
+
+    <p>
+        <strong>
+            Total:
+            Rp {{ sale.total }}
+        </strong>
+    </p>
+
+    <p>
+        Pembayaran:
+        Rp {{ sale.payment }}
+    </p>
+
+    <p>
+        <strong>
+            Kembalian:
+            Rp {{ sale.change }}
+        </strong>
+    </p>
+
+    <hr>
+
+    <p>
+        <strong>Status:</strong>
+        {{ sale.status }}
+    </p>
+
+    <br>
+
+    <a href="{% url 'pos' %}">
+        Kembali ke POS
+    </a>
+
+</div>
+
+{% endblock %}

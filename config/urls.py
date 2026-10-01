@@ -1,26 +1,28 @@
-"""
-URL configuration for mongodb_connection project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
+from apps.reports import views as reports
+
+def health_check(request):
+    return JsonResponse({"success": True, "service": "koperasi", "status": "ok"})
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('apps.authentication.urls')),
-    path("inventory/",include("apps.inventory.urls")),      
-    path("master-data/", include("apps.master_data.urls")),
-
+    path("health/", health_check, name="health_check"),
+    path("admin/", admin.site.urls),
+    # Authentication, dashboard and user management use the PRD root URLs.
+    path("", include("apps.authentication.urls")),
+    # Master-data UI keeps PRD-friendly root URLs.
+    path("", include("apps.master_data.urls")),
+    # Inventory/procurement HTML UI owns the user-facing root routes.
+    path("", include("apps.inventory.ui_urls")),
+    path("pos/", include("apps.pos.urls")),
+    path("sales/", include("apps.pos.root_urls")),
+    path("returns/", include("apps.inventory.root_return_urls")),
+    path("reports/", include("apps.reports.urls")),
+    path("expenses/", include("apps.finance.urls")),
+    path("finance/", include("apps.finance.urls")),
+    path("audit-logs/", reports.audit_logs, name="audit_logs_root"),
+    # Raw JSON endpoints are separated from HTML routes.
+    path("api/inventory/", include("apps.inventory.urls")),
 ]

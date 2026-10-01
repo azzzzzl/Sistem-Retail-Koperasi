@@ -1,53 +1,496 @@
-{% extends "base.html" %}
+{% load static %}
 
-{% block content %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="login-container">
+    <title>Masuk | KOPERA</title>
 
-    <h1>Login</h1>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="message">
-                {{ message }}
+<body>
+
+    <main class="login-page">
+
+        <!-- =========================
+             LEFT / BRANDING SECTION
+        ========================== -->
+        <section class="login-brand">
+
+            <div class="brand-content">
+
+                <div class="brand-logo">
+                    <span class="brand-logo-icon">K</span>
+                    <span class="brand-logo-text">KOPERA</span>
+                </div>
+
+                <div class="brand-description">
+                    <span class="brand-badge">
+                        DIGITAL COOPERATIVE
+                    </span>
+
+                    <h1>
+                        Belanja mudah,<br>
+                        kebutuhan terpenuhi.
+                    </h1>
+
+                    <p>
+                        KOPERA menghadirkan pengalaman koperasi
+                        yang lebih modern, praktis, dan terintegrasi
+                        dalam satu platform.
+                    </p>
+                </div>
+
+                <div class="brand-features">
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            ✓
+                        </div>
+
+                        <div>
+                            <strong>Praktis</strong>
+                            <span>Kelola kebutuhan dalam satu platform.</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            ✓
+                        </div>
+
+                        <div>
+                            <strong>Terintegrasi</strong>
+                            <span>Data koperasi tersimpan secara terpusat.</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            ✓
+                        </div>
+
+                        <div>
+                            <strong>Untuk Semua</strong>
+                            <span>Digunakan oleh pengurus, kasir, dan anggota.</span>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
-        {% endfor %}
-    {% endif %}
 
-    <form method="POST">
-        {% csrf_token %}
+            <div class="brand-footer">
+                <span>KOPERA</span>
+                <span>•</span>
+                <span>Digital Cooperative &amp; Commerce Platform</span>
+            </div>
 
-        <div>
-            <label for="username">
-                Username
-            </label>
+        </section>
 
-            <input
-                type="text"
-                id="username"
-                name="username"
-                required
-            >
-        </div>
 
-        <div>
-            <label for="password">
-                Password
-            </label>
+        <!-- =========================
+             RIGHT / LOGIN SECTION
+        ========================== -->
+        <section class="login-section">
 
-            <input
-                type="password"
-                id="password"
-                name="password"
-                required
-            >
-        </div>
+            <div class="login-card">
 
-        <button type="submit">
-            Login
-        </button>
-    </form>
+                <div class="login-header">
 
-</div>
+                    <div class="mobile-logo">
+                        <span class="mobile-logo-icon">K</span>
+                        <span>KOPERA</span>
+                    </div>
 
-{% endblock %}
+                    <h2>
+                        Selamat datang kembali
+                    </h2>
+
+                    <p>
+                        Masuk ke akun KOPERA untuk melanjutkan.
+                    </p>
+
+                </div>
+
+
+                <!-- =========================
+                     MESSAGE / ERROR
+                ========================== -->
+                {% if messages %}
+                    <div class="login-messages">
+
+                        {% for message in messages %}
+
+                            <div class="message message-{{ message.tags|default:'info' }}">
+                                <span class="message-icon">!</span>
+                                <span>{{ message }}</span>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+                {% endif %}
+
+
+                <!-- =========================
+                     LOGIN FORM
+                ========================== -->
+                <form
+                    method="post"
+                    action="{% url 'login' %}"
+                    class="login-form"
+                    autocomplete="on"
+                >
+
+                    {% csrf_token %}
+
+
+                    <!-- Username -->
+                    <div class="form-group">
+
+                        <label for="username">
+                            Username atau Email
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+
+                                    <circle
+                                        cx="12"
+                                        cy="7"
+                                        r="4"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                    />
+                                </svg>
+                            </span>
+
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Masukkan username atau email"
+                                autocomplete="username"
+                                value="{{ request.POST.username|default:'' }}"
+                                required
+                                autofocus
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Password -->
+                    <div class="form-group">
+
+                        <div class="password-label-row">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <a href="#" class="forgot-password">
+                                Lupa password?
+                            </a>
+
+                        </div>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <rect
+                                        x="4"
+                                        y="10"
+                                        width="16"
+                                        height="11"
+                                        rx="2"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                    />
+
+                                    <path
+                                        d="M8 10V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V10"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                    />
+
+                                    <circle
+                                        cx="12"
+                                        cy="15.5"
+                                        r="1"
+                                        fill="currentColor"
+                                    />
+                                </svg>
+                            </span>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Masukkan password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="passwordToggle"
+                                aria-label="Tampilkan password"
+                                title="Tampilkan password"
+                            >
+
+                                <svg
+                                    id="eyeOpen"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M2 12C2 12 5.5 5 12 5C18.5 5 22 12 22 12C22 12 18.5 19 12 19C5.5 19 2 12 2 12Z"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linejoin="round"
+                                    />
+
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="3"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                    />
+                                </svg>
+
+                                <svg
+                                    id="eyeClosed"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                    style="display: none;"
+                                >
+                                    <path
+                                        d="M3 3L21 21"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                    />
+
+                                    <path
+                                        d="M10.58 10.59C10.2 10.97 10 11.48 10 12C10 13.1 10.9 14 12 14C12.52 14 13.03 13.8 13.41 13.42"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                    />
+
+                                    <path
+                                        d="M9.88 5.08C10.56 4.87 11.27 4.75 12 4.75C18.5 4.75 22 12 22 12C22 12 20.6 14.8 18.08 16.83"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+
+                                    <path
+                                        d="M6.61 6.61C3.66 8.61 2 12 2 12C2 12 5.5 19.25 12 19.25C13.73 19.25 15.3 18.75 16.69 17.96"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Remember Me -->
+                    <div class="form-options">
+
+                        <label class="remember-me">
+
+                            <input
+                                type="checkbox"
+                                name="remember_me"
+                                value="1"
+                            >
+
+                            <span class="custom-checkbox"></span>
+
+                            <span>
+                                Ingat saya
+                            </span>
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- Submit -->
+                    <button
+                        type="submit"
+                        class="login-button"
+                    >
+                        <span>Masuk</span>
+
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M5 12H19"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+
+                            <path
+                                d="M13 6L19 12L13 18"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </button>
+
+                </form>
+
+
+                <!-- =========================
+                     REGISTER
+                ========================== -->
+                <div class="register-section">
+
+                    <span>
+                        Belum punya akun?
+                    </span>
+
+                    <a href="#">
+                        Daftar sebagai anggota
+                    </a>
+
+                </div>
+
+
+                <!-- =========================
+                     LOGIN INFO
+                ========================== -->
+                <div class="login-info">
+
+                    <div class="info-line"></div>
+
+                    <span>
+                        Akses aman untuk pengguna KOPERA
+                    </span>
+
+                    <div class="info-line"></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         PASSWORD TOGGLE
+    ========================== -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const passwordInput = document.getElementById("password");
+            const passwordToggle = document.getElementById("passwordToggle");
+            const eyeOpen = document.getElementById("eyeOpen");
+            const eyeClosed = document.getElementById("eyeClosed");
+
+            if (
+                passwordInput &&
+                passwordToggle &&
+                eyeOpen &&
+                eyeClosed
+            ) {
+
+                passwordToggle.addEventListener("click", function () {
+
+                    const isPassword =
+                        passwordInput.type === "password";
+
+                    passwordInput.type =
+                        isPassword ? "text" : "password";
+
+                    eyeOpen.style.display =
+                        isPassword ? "none" : "block";
+
+                    eyeClosed.style.display =
+                        isPassword ? "block" : "none";
+
+                    passwordToggle.setAttribute(
+                        "aria-label",
+                        isPassword
+                            ? "Sembunyikan password"
+                            : "Tampilkan password"
+                    );
+
+                    passwordToggle.setAttribute(
+                        "title",
+                        isPassword
+                            ? "Sembunyikan password"
+                            : "Tampilkan password"
+                    );
+
+                });
+
+            }
+
+        });
+    </script>
+
+</body>
+</html>

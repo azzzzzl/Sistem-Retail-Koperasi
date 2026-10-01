@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 from datetime import date, datetime
 
@@ -35,6 +36,7 @@ def serialize_document(document):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_payment_list(request):
     service = SupplierPaymentService()
 
@@ -49,6 +51,7 @@ def supplier_payment_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("procurement")
 def supplier_payment_create(request):
     try:
         data = json.loads(
@@ -108,6 +111,7 @@ def supplier_payment_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_payment_detail(
     request,
     payment_id,
@@ -136,6 +140,7 @@ def supplier_payment_detail(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_payment_by_invoice(
     request,
     invoice_id,
@@ -155,6 +160,7 @@ def supplier_payment_by_invoice(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("procurement")
 def supplier_payment_by_supplier(
     request,
     supplier_id,

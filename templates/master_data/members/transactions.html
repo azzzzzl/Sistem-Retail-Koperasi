@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Transaksi Anggota{% endblock %}
+
+{% block content %}
+
+<style>
+    .member-transactions-page {
+        padding-bottom: 30px;
+    }
+
+    .transactions-header {
+        background: linear-gradient(135deg, #b91c1c, #991b1b);
+        color: #fff;
+        border-radius: 16px;
+        padding: 28px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 24px rgba(185, 28, 28, 0.15);
+    }
+
+    .transactions-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .transactions-header .member-code {
+        margin-top: 6px;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .transactions-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .transactions-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fafafa;
+    }
+
+    .transactions-card-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #171717;
+    }
+
+    .transactions-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .transactions-table {
+        margin: 0;
+        min-width: 750px;
+    }
+
+    .transactions-table thead th {
+        background: #fafafa;
+        color: #667085;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 14px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .transactions-table tbody td {
+        padding: 15px 18px;
+        vertical-align: middle;
+        color: #344054;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .transactions-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .transactions-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .invoice-number {
+        color: #b91c1c;
+        font-weight: 600;
+    }
+
+    .transaction-total {
+        color: #171717;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .transaction-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .btn-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #b91c1c;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 13px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-detail:hover {
+        background: #991b1b;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .empty-transactions {
+        padding: 50px 20px !important;
+        text-align: center;
+        color: #98a2b3 !important;
+    }
+
+    .empty-icon {
+        font-size: 34px;
+        margin-bottom: 10px;
+        color: #b91c1c;
+    }
+
+    @media (max-width: 768px) {
+        .transactions-header {
+            padding: 22px;
+        }
+
+        .transactions-header h1 {
+            font-size: 23px;
+        }
+
+        .transactions-card-header {
+            padding: 16px 18px;
+        }
+    }
+</style>
+
+<div class="container-fluid member-transactions-page">
+
+    <!-- Header -->
+    <div class="transactions-header">
+        <h1>
+            Transaksi {{ member.name }}
+        </h1>
+
+        <div class="member-code">
+            Kode Anggota: <strong>{{ member.member_code }}</strong>
+        </div>
+    </div>
+
+
+    <!-- Transactions Card -->
+    <div class="transactions-card">
+
+        <div class="transactions-card-header">
+            <h2>
+                <i class="bi bi-receipt me-2"></i>
+                Riwayat Transaksi
+            </h2>
+        </div>
+
+        <div class="transactions-table-wrapper">
+
+            <table class="table transactions-table">
+
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Tanggal</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for x in sales %}
+
+                    <tr>
+
+                        <td>
+                            <span class="invoice-number">
+                                {{ x.invoiceNumber }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ x.saleDate|date:"d-m-Y H:i" }}
+                        </td>
+
+                        <td>
+                            <span class="transaction-total">
+                                Rp {{ x.total|floatformat:0 }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="transaction-status">
+                                {{ x.status }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <a
+                                href="{% url 'sale_detail' x|mongo_id %}"
+                                class="btn-detail"
+                            >
+                                <i class="bi bi-eye"></i>
+                                Detail
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5" class="empty-transactions">
+
+                            <div class="empty-icon">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+
+                            <div class="fw-semibold text-dark mb-1">
+                                Belum Ada Transaksi
+                            </div>
+
+                            <div>
+                                Anggota ini belum memiliki riwayat transaksi.
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

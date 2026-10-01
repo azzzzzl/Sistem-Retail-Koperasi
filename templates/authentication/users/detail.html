@@ -1,81 +1,462 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h1>Detail User</h1>
+<link rel="stylesheet" href="{% static 'css/users.css' %}">
 
-<p>
-    <strong>Username:</strong>
-    {{ user.username }}
-</p>
+<div class="user-page-header">
+    <div class="user-page-heading">
+        <div class="user-page-eyebrow">
+            USER MANAGEMENT
+        </div>
 
-<p>
-    <strong>Nama:</strong>
-    {{ user.name }}
-</p>
+        <h1 class="user-page-title">
+            Detail User
+        </h1>
 
-<p>
-    <strong>Email:</strong>
-    {{ user.email }}
-</p>
+        <p class="user-page-description">
+            Informasi akun dan pengaturan akses pengguna KOPERA.
+        </p>
+    </div>
 
-<p>
-    <strong>Role:</strong>
-    {{ user.role }}
-</p>
+    <div class="user-page-actions">
+        <a href="{% url 'user_list' %}" class="user-btn user-btn-secondary">
+            ← Kembali
+        </a>
+    </div>
+</div>
 
-<p>
-    <strong>Status:</strong>
-    {{ user.status }}
-</p>
 
-<p>
-    <strong>Dibuat:</strong>
-    {{ user.createdAt }}
-</p>
+<div class="user-detail-layout">
 
-<p>
-    <strong>Diperbarui:</strong>
-    {{ user.updatedAt }}
-</p>
+    <!-- =========================
+         MAIN PROFILE
+         ========================= -->
+    <div class="user-card">
 
-<p>
-    <a href="{% url 'user_edit' user_id=user.id %}">
-        Edit User
-    </a>
-</p>
+        <div class="user-card-header">
 
-<a href="/users/{{ user.id }}/reset-password/">
-        Reset Password
-</a>
+            <div>
+                <h2 class="user-card-title">
+                    Informasi User
+                </h2>
 
-<a href="/users/{{ user.id }}/role/">
-    Ubah Role
-</a>
+                <p class="user-card-description">
+                    Detail akun pengguna yang terdaftar di sistem.
+                </p>
+            </div>
 
-<p>
-    <a href="{% url 'user_list' %}">
-        Kembali
-    </a>
-</p>
+            <div>
 
-<p>
-    <strong>Status:</strong>
-    {{ user.status }}
-</p>
+                {% if user.status == "active" %}
 
-<form method="post" action="/users/{{ user.id }}/status/">
-    {% csrf_token %}
+                    <span class="user-status-badge user-status-active">
+                        <span class="user-status-dot"></span>
+                        Aktif
+                    </span>
 
-    {% if user.status == "active" %}
-        <button type="submit">
-            Nonaktifkan User
-        </button>
-    {% else %}
-        <button type="submit">
-            Aktifkan User
-        </button>
-    {% endif %}
-</form>
+                {% else %}
+
+                    <span class="user-status-badge user-status-inactive">
+                        <span class="user-status-dot"></span>
+                        Nonaktif
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <div class="user-card-body">
+
+            <!-- PROFILE HEADER -->
+            <div class="user-profile">
+
+                <div class="user-profile-avatar">
+                    {{ user.name|default:user.username|slice:":1"|upper }}
+                </div>
+
+                <div class="user-profile-info">
+
+                    <h2>
+                        {{ user.name|default:"-" }}
+                    </h2>
+
+                    <p>
+                        @{{ user.username }}
+                    </p>
+
+
+                    {% if user.role == "admin" %}
+
+                        <span class="user-role-badge user-role-admin">
+                            Administrator
+                        </span>
+
+                    {% elif user.role == "pengurus" %}
+
+                        <span class="user-role-badge user-role-pengurus">
+                            Pengurus
+                        </span>
+
+                    {% elif user.role == "kasir" %}
+
+                        <span class="user-role-badge user-role-kasir">
+                            Kasir
+                        </span>
+
+                    {% elif user.role == "anggota" %}
+
+                        <span class="user-role-badge user-role-anggota">
+                            Anggota
+                        </span>
+
+                    {% else %}
+
+                        <span class="user-role-badge user-role-default">
+                            {{ user.role|default:"-" }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ACCOUNT INFORMATION -->
+            <div class="user-detail-section">
+
+                <div class="user-detail-section-title">
+                    Informasi Akun
+                </div>
+
+
+                <div class="user-detail-grid">
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Username
+                        </span>
+
+                        <span class="user-detail-value">
+                            {{ user.username|default:"-" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Nama Lengkap
+                        </span>
+
+                        <span class="user-detail-value">
+                            {{ user.name|default:"-" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Email
+                        </span>
+
+                        <span class="user-detail-value">
+                            {{ user.email|default:"-" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Role
+                        </span>
+
+                        <span class="user-detail-value">
+                            {{ user.role|default:"-" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Status
+                        </span>
+
+                        <span class="user-detail-value">
+
+                            {% if user.status == "active" %}
+
+                                <span class="user-status-badge user-status-active">
+                                    <span class="user-status-dot"></span>
+                                    Aktif
+                                </span>
+
+                            {% else %}
+
+                                <span class="user-status-badge user-status-inactive">
+                                    <span class="user-status-dot"></span>
+                                    Nonaktif
+                                </span>
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SYSTEM INFORMATION -->
+            <div class="user-detail-section">
+
+                <div class="user-detail-section-title">
+                    Informasi Sistem
+                </div>
+
+
+                <div class="user-detail-grid">
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Dibuat
+                        </span>
+
+                        <span class="user-detail-value">
+                            {{ user.createdAt|default:"-" }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="user-detail-item">
+
+                        <span class="user-detail-label">
+                            Diperbarui
+                        </span>
+
+                        <span class="user-detail-value">
+                            {{ user.updatedAt|default:"-" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         ACTION PANEL
+         ========================= -->
+    <div class="user-card user-action-card">
+
+        <div class="user-card-header">
+
+            <div>
+
+                <h2 class="user-card-title">
+                    Aksi User
+                </h2>
+
+                <p class="user-card-description">
+                    Kelola akun pengguna.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-card-body">
+
+            <div class="user-actions">
+
+                <!-- EDIT USER -->
+                <a
+                    href="{% url 'user_edit' user_id=user.id %}"
+                    class="user-action-item"
+                >
+
+                    <div class="user-action-icon">
+                        ✎
+                    </div>
+
+                    <div class="user-action-content">
+
+                        <strong>
+                            Edit User
+                        </strong>
+
+                        <span>
+                            Ubah informasi akun pengguna.
+                        </span>
+
+                    </div>
+
+                    <div class="user-action-arrow">
+                        →
+                    </div>
+
+                </a>
+
+
+                <!-- CHANGE ROLE -->
+                <a
+                    href="{% url 'user_role' user_id=user.id %}"
+                    class="user-action-item"
+                >
+
+                    <div class="user-action-icon">
+                        🔐
+                    </div>
+
+                    <div class="user-action-content">
+
+                        <strong>
+                            Ubah Role
+                        </strong>
+
+                        <span>
+                            Atur hak akses pengguna.
+                        </span>
+
+                    </div>
+
+                    <div class="user-action-arrow">
+                        →
+                    </div>
+
+                </a>
+
+
+                <!-- RESET PASSWORD -->
+                <a
+                    href="{% url 'user_reset_password' user_id=user.id %}"
+                    class="user-action-item"
+                >
+
+                    <div class="user-action-icon">
+                        🔑
+                    </div>
+
+                    <div class="user-action-content">
+
+                        <strong>
+                            Reset Password
+                        </strong>
+
+                        <span>
+                            Atur ulang password pengguna.
+                        </span>
+
+                    </div>
+
+                    <div class="user-action-arrow">
+                        →
+                    </div>
+
+                </a>
+
+
+                <!-- STATUS -->
+                <div class="user-action-item user-action-status">
+
+                    <div class="user-action-icon">
+
+                        {% if user.status == "active" %}
+                            ✓
+                        {% else %}
+                            !
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="user-action-content">
+
+                        <strong>
+
+                            {% if user.status == "active" %}
+                                Nonaktifkan User
+                            {% else %}
+                                Aktifkan User
+                            {% endif %}
+
+                        </strong>
+
+
+                        <span>
+
+                            {% if user.status == "active" %}
+                                Cabut akses login pengguna.
+                            {% else %}
+                                Aktifkan kembali akses login pengguna.
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'user_status' user_id=user.id %}"
+                        class="user-status-form"
+                    >
+
+                        {% csrf_token %}
+
+                        {% if user.status == "active" %}
+
+                            <button
+                                type="submit"
+                                class="user-btn user-btn-danger"
+                            >
+                                Nonaktifkan
+                            </button>
+
+                        {% else %}
+
+                            <button
+                                type="submit"
+                                class="user-btn user-btn-success"
+                            >
+                                Aktifkan
+                            </button>
+
+                        {% endif %}
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}

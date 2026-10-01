@@ -1,48 +1,271 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h2>Ubah Role User</h2>
+<link rel="stylesheet" href="{% static 'css/users.css' %}">
 
-<p>
-    Username:
-    <strong>{{ user.username }}</strong>
-</p>
+<div class="user-page-header">
 
-<p>
-    Role saat ini:
-    <strong>{{ user.role }}</strong>
-</p>
+    <div class="user-page-heading">
 
-<form method="post">
-    {% csrf_token %}
+        <div class="user-page-eyebrow">
+            USER MANAGEMENT
+        </div>
 
-    <div>
-        <label>Role Baru</label>
+        <h1 class="user-page-title">
+            Ubah Role User
+        </h1>
 
-        <select name="role" required>
-            <option value="">-- Pilih Role --</option>
+        <p class="user-page-description">
+            Atur hak akses pengguna berdasarkan kebutuhan operasional KOPERA.
+        </p>
 
-            {% for role in roles %}
-                <option
-                    value="{{ role }}"
-                    {% if user.role == role %}selected{% endif %}
-                >
-                    {{ role }}
-                </option>
-            {% endfor %}
-        </select>
     </div>
 
-    <br>
 
-    <button type="submit">
-        Simpan Role
-    </button>
+    <div class="user-page-actions">
 
-    <a href="/users/{{ user.id }}/">
-        Batal
-    </a>
-</form>
+        <a
+            href="{% url 'user_detail' user_id=user.id %}"
+            class="user-btn user-btn-secondary"
+        >
+            ← Kembali
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="user-role-layout">
+
+    <!-- USER INFORMATION -->
+    <div class="user-card">
+
+        <div class="user-card-header">
+
+            <div>
+
+                <h2 class="user-card-title">
+                    Informasi User
+                </h2>
+
+                <p class="user-card-description">
+                    Informasi akun yang akan diperbarui rolenya.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-card-body">
+
+            <div class="user-role-profile">
+
+                <div class="user-profile-avatar">
+                    {{ user.name|default:user.username|slice:":1"|upper }}
+                </div>
+
+
+                <div class="user-profile-info">
+
+                    <h2>
+                        {{ user.name|default:"-" }}
+                    </h2>
+
+                    <p>
+                        @{{ user.username }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="user-detail-grid">
+
+                <div class="user-detail-item">
+
+                    <span class="user-detail-label">
+                        Username
+                    </span>
+
+                    <span class="user-detail-value">
+                        {{ user.username }}
+                    </span>
+
+                </div>
+
+
+                <div class="user-detail-item">
+
+                    <span class="user-detail-label">
+                        Role Saat Ini
+                    </span>
+
+                    <span class="user-detail-value">
+
+                        {% if user.role == "admin" %}
+
+                            <span class="user-role-badge user-role-admin">
+                                Administrator
+                            </span>
+
+                        {% elif user.role == "pengurus" %}
+
+                            <span class="user-role-badge user-role-pengurus">
+                                Pengurus
+                            </span>
+
+                        {% elif user.role == "kasir" %}
+
+                            <span class="user-role-badge user-role-kasir">
+                                Kasir
+                            </span>
+
+                        {% elif user.role == "anggota" %}
+
+                            <span class="user-role-badge user-role-anggota">
+                                Anggota
+                            </span>
+
+                        {% else %}
+
+                            <span class="user-role-badge user-role-default">
+                                {{ user.role|default:"-" }}
+                            </span>
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ROLE FORM -->
+    <div class="user-card">
+
+        <div class="user-card-header">
+
+            <div>
+
+                <h2 class="user-card-title">
+                    Pengaturan Role
+                </h2>
+
+                <p class="user-card-description">
+                    Pilih role baru untuk pengguna ini.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="user-card-body">
+
+                <div class="user-form-section">
+
+                    <div class="user-form-group">
+
+                        <label for="role">
+                            Role Baru
+                        </label>
+
+                        <select
+                            id="role"
+                            name="role"
+                            required
+                        >
+
+                            <option value="">
+                                -- Pilih Role --
+                            </option>
+
+                            {% for role in roles %}
+
+                                <option
+                                    value="{{ role }}"
+                                    {% if user.role == role %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ role|title }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <small>
+                            Role menentukan hak akses pengguna di dalam sistem.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ROLE DESCRIPTION -->
+                <div class="user-role-info">
+
+                    <div class="user-role-info-icon">
+                        🔐
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Perubahan Hak Akses
+                        </strong>
+
+                        <p>
+                            Pastikan role yang dipilih sesuai dengan tanggung
+                            jawab pengguna sebelum menyimpan perubahan.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="user-form-footer">
+
+                <a
+                    href="{% url 'user_detail' user_id=user.id %}"
+                    class="user-btn user-btn-secondary"
+                >
+                    Batal
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="user-btn user-btn-primary"
+                >
+                    Simpan Role
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 {% endblock %}

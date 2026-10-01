@@ -118,6 +118,7 @@
 
                     <td>
 
+                        <a href="{% url 'master_data:member_detail' member_id=member.id %}" class="btn btn-sm btn-info">Detail</a>
                         <a
                             href="{% url 'master_data:member_update' member_id=member.id %}"
                             class="btn btn-sm btn-warning"

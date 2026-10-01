@@ -1,81 +1,216 @@
 {% extends "base.html" %}
 
+{% block title %}Produk - KOPERA{% endblock %}
+
 {% block content %}
 
-<div class="container mt-4">
+<div class="page-header">
+    <div>
+        <div class="breadcrumb">
+            <span>Master Data</span>
+            <span class="breadcrumb-separator">/</span>
+            <span>Produk</span>
+        </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Produk</h1>
+        <p class="page-description">
+            Kelola daftar produk, harga, stok, dan status produk koperasi.
+        </p>
+    </div>
 
-        <h2>Data Produk</h2>
-
+    <div class="page-header-actions">
         <a href="{% url 'master_data:product_create' %}" class="btn btn-primary">
+            <span class="btn-icon">+</span>
             Tambah Produk
         </a>
-
     </div>
+</div>
 
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-success">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
 
-    <form method="GET" class="row g-2 mb-3">
+<!-- =========================================================
+     SUMMARY
+========================================================= -->
 
-        <div class="col-md-6">
-            <input type="text" name="search" class="form-control" placeholder="Cari SKU, barcode, atau nama produk..."
-                value="{{ search }}">
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-primary">
+            ▦
         </div>
 
-        <div class="col-md-3">
-            <select name="status" class="form-select">
-                <option value="">Semua Status</option>
+        <div class="stat-content">
+            <span class="stat-label">Total Produk</span>
+            <strong class="stat-value">
+                {{ products|length }}
+            </strong>
+        </div>
+    </div>
 
-                {% if status == "active" %}
-                <option value="active" selected>Active</option>
-                {% else %}
-                <option value="active">Active</option>
-                {% endif %}
 
-                {% if status == "inactive" %}
-                <option value="inactive" selected>Inactive</option>
-                {% else %}
-                <option value="inactive">Inactive</option>
-                {% endif %}
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-success">
+            ✓
+        </div>
+
+        <div class="stat-content">
+            <span class="stat-label">Produk Aktif</span>
+            <strong class="stat-value">
+                {{ active_count|default:"0" }}
+            </strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-warning">
+            !
+        </div>
+
+        <div class="stat-content">
+            <span class="stat-label">Stok Rendah</span>
+            <strong class="stat-value">
+                {{ low_stock_count|default:"0" }}
+            </strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-danger">
+            ×
+        </div>
+
+        <div class="stat-content">
+            <span class="stat-label">Tidak Aktif</span>
+            <strong class="stat-value">
+                {{ inactive_count|default:"0" }}
+            </strong>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PRODUCT TABLE CARD
+========================================================= -->
+
+<div class="card">
+
+    <div class="card-header">
+
+        <div>
+            <h2 class="card-title">Daftar Produk</h2>
+            <p class="card-subtitle">
+                Gunakan pencarian dan filter untuk menemukan produk.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- FILTER -->
+
+    <form method="get" class="filter-bar">
+
+        <div class="filter-search">
+
+            <div class="search-wrapper">
+
+                <span class="search-icon">⌕</span>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search|default:'' }}"
+                    class="form-control search-input"
+                    placeholder="Cari nama, SKU, atau barcode..."
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="filter-item">
+
+            <select name="status" class="form-control">
+
+                <option value="">
+                    Semua Status
+                </option>
+
+                <option
+                    value="ACTIVE"
+                    {% if status == "ACTIVE" %}selected{% endif %}
+                >
+                    Aktif
+                </option>
+
+                <option
+                    value="INACTIVE"
+                    {% if status == "INACTIVE" %}selected{% endif %}
+                >
+                    Tidak Aktif
+                </option>
+
             </select>
+
         </div>
 
-        <div class="col-md-3">
+
+        <div class="filter-actions">
+
             <button type="submit" class="btn btn-primary">
                 Cari
             </button>
 
-            <a href="{% url 'master_data:product_list' %}" class="btn btn-secondary">
-                Reset
-            </a>
+            {% if search or status %}
+                <a
+                    href="{% url 'master_data:product_list' %}"
+                    class="btn btn-secondary"
+                >
+                    Reset
+                </a>
+            {% endif %}
+
         </div>
 
     </form>
 
-    <div class="table-responsive">
 
-        <table class="table table-bordered table-striped">
+    <!-- TABLE -->
+
+    <div class="table-wrapper">
+
+        <table class="data-table">
 
             <thead>
+
                 <tr>
-                    <th>No</th>
+
+                    <th>Produk</th>
+
                     <th>SKU</th>
+
                     <th>Barcode</th>
-                    <th>Nama</th>
+
+                    <th>Kategori</th>
+
                     <th>Harga Beli</th>
+
                     <th>Harga Jual</th>
+
                     <th>Stok</th>
+
                     <th>Status</th>
-                    <th>Aksi</th>
+
+                    <th class="text-right">Aksi</th>
+
                 </tr>
+
             </thead>
+
 
             <tbody>
 
@@ -83,67 +218,231 @@
 
                 <tr>
 
+                    <!-- PRODUCT -->
+
                     <td>
-                        {{ forloop.counter }}
+
+                        <div class="product-cell">
+
+                            <div class="product-avatar">
+                                {{ product.name|slice:":1"|upper }}
+                            </div>
+
+                            <div class="product-info">
+
+                                <strong class="product-name">
+                                    {{ product.name }}
+                                </strong>
+
+                                <span class="product-id">
+                                    ID: {{ product|mongo_id }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
                     </td>
 
+
+                    <!-- SKU -->
+
                     <td>
-                        {{ product.sku }}
+
+                        <span class="code-badge">
+                            {{ product.sku|default:"-" }}
+                        </span>
+
                     </td>
 
+
+                    <!-- BARCODE -->
+
                     <td>
-                        {{ product.barcode|default:"-" }}
+
+                        <span class="muted-text">
+                            {{ product.barcode|default:"-" }}
+                        </span>
+
                     </td>
 
+
+                    <!-- CATEGORY -->
+
                     <td>
-                        {{ product.name }}
+
+                        {% if product.category_name %}
+
+                            <span class="category-badge">
+                                {{ product.category_name }}
+                            </span>
+
+                        {% elif product.category %}
+
+                            <span class="category-badge">
+                                {{ product.category }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                -
+                            </span>
+
+                        {% endif %}
+
                     </td>
 
+
+                    <!-- PURCHASE PRICE -->
+
                     <td>
-                        {{ product.purchase_price }}
+
+                        <span class="money">
+
+                            Rp
+                            {{ product.purchase_price|default:"0" }}
+
+                        </span>
+
                     </td>
 
+
+                    <!-- SELLING PRICE -->
+
                     <td>
-                        {{ product.selling_price }}
+
+                        <strong class="money">
+
+                            Rp
+                            {{ product.selling_price|default:"0" }}
+
+                        </strong>
+
                     </td>
 
+
+                    <!-- STOCK -->
+
                     <td>
-                        {{ product.stock }}
+
+                        {% if product.stock is not None %}
+
+                            {% if product.stock <= 0 %}
+
+                                <span class="stock-badge stock-danger">
+                                    Habis
+                                </span>
+
+                            {% elif product.stock <= 5 %}
+
+                                <span class="stock-badge stock-warning">
+                                    {{ product.stock }}
+                                </span>
+
+                            {% else %}
+
+                                <span class="stock-badge stock-success">
+                                    {{ product.stock }}
+                                </span>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                0
+                            </span>
+
+                        {% endif %}
+
                     </td>
 
+
+                    <!-- STATUS -->
+
                     <td>
-                        {{ product.status }}
+
+                        {% if product.status == "ACTIVE" or product.status == "active" %}
+
+                            <span class="status-badge status-active">
+                                <span class="status-dot"></span>
+                                Aktif
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge status-inactive">
+                                <span class="status-dot"></span>
+                                Tidak Aktif
+                            </span>
+
+                        {% endif %}
+
                     </td>
 
-                    <td>
 
-                        <a href="{% url 'master_data:product_update' product_id=product.id %}"
-                            class="btn btn-sm btn-warning">
-                            Edit
-                        </a>
+                    <!-- ACTION -->
 
-                        <form method="POST" action="{% url 'master_data:product_delete' product_id=product.id %}"
-                            style="display:inline;">
+                    <td class="text-right">
 
-                            {% csrf_token %}
+                        <div class="table-actions">
 
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('Hapus produk ini?');">
-                                Hapus
-                            </button>
+                            <a
+                                href="{% url 'master_data:product_detail' product.id %}"
+                                class="action-btn action-view"
+                                title="Lihat detail"
+                            >
+                                Lihat
+                            </a>
 
-                        </form>
+                            <a
+                                href="{% url 'master_data:product_edit' product.id %}"
+                                class="action-btn action-edit"
+                                title="Edit produk"
+                            >
+                                Edit
+                            </a>
+
+                        </div>
 
                     </td>
 
                 </tr>
 
+
                 {% empty %}
 
                 <tr>
-                    <td colspan="9" class="text-center">
-                        Belum ada data produk.
+
+                    <td colspan="9">
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">
+                                ▦
+                            </div>
+
+                            <h3>
+                                Produk belum tersedia
+                            </h3>
+
+                            <p>
+                                Belum ada produk yang sesuai dengan pencarian
+                                atau filter yang dipilih.
+                            </p>
+
+                            <a
+                                href="{% url 'master_data:product_create' %}"
+                                class="btn btn-primary"
+                            >
+                                + Tambah Produk
+                            </a>
+
+                        </div>
+
                     </td>
+
                 </tr>
 
                 {% endfor %}
@@ -155,5 +454,6 @@
     </div>
 
 </div>
+
 
 {% endblock %}

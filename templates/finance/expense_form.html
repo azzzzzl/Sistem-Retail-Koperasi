@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}{% if expense %}Edit Pengeluaran{% else %}Tambah Pengeluaran{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header"><h1>{% if expense %}Edit Pengeluaran{% else %}Tambah Pengeluaran{% endif %}</h1></div>
+<div class="card"><form method="post">{% csrf_token %}{% if not expense %}<label>Nomor Pengeluaran<input name="expense_number" required placeholder="EXP-001"></label><label>Tanggal<input type="date" name="date"></label>{% endif %}<label>Kategori<select name="category">{% for c in categories %}<option value="{{ c }}" {% if expense.category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></label><label>Deskripsi<textarea name="description" rows="3">{{ expense.description }}</textarea></label><label>Jumlah<input type="number" name="amount" min="0.01" step="0.01" required value="{{ expense.amount|default:'' }}"></label><label>Metode Pembayaran<select name="payment_method">{% for m in payment_methods %}<option value="{{ m }}" {% if expense.paymentMethod == m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label><label>No. Referensi<input name="reference_number" value="{{ expense.referenceNumber|default:'' }}"></label><button class="btn primary" type="submit">Simpan</button> <a class="btn" href="{% url 'finance:expenses' %}">Batal</a></form></div>
+{% endblock %}

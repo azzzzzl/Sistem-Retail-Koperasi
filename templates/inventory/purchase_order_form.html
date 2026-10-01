@@ -1,0 +1,726 @@
+{% extends "base.html" %}
+
+{% block title %}Buat Purchase Order{% endblock %}
+
+{% block content %}
+
+<!-- Bootstrap 5 -->
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+
+<style>
+    /* =========================================================
+       PURCHASE ORDER PAGE
+    ========================================================= */
+
+    .po-page {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .po-page-header {
+        margin-bottom: 28px;
+    }
+
+    .po-breadcrumb {
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .po-page-title {
+        color: #101828;
+        font-size: 30px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .po-page-subtitle {
+        color: #667085;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Main card */
+    .po-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(16, 24, 40, .06);
+        overflow: hidden;
+    }
+
+    .po-card-header {
+        padding: 24px 28px;
+        border-bottom: 1px solid #eaecf0;
+        background: linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #fffafa 100%
+        );
+    }
+
+    .po-card-title {
+        color: #101828;
+        font-size: 17px;
+        font-weight: 800;
+        margin: 0 0 5px;
+    }
+
+    .po-card-description {
+        color: #667085;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .po-card-body {
+        padding: 28px;
+    }
+
+    /* Section */
+    .po-section {
+        margin-bottom: 30px;
+    }
+
+    .po-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .po-section-title {
+        color: #101828;
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .po-section-description {
+        color: #667085;
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+
+    /* Form */
+    .po-label {
+        color: #344054;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .po-required {
+        color: #dc2626;
+    }
+
+    .po-input,
+    .po-select,
+    .po-textarea {
+        border: 1px solid #d0d5dd !important;
+        border-radius: 10px !important;
+        color: #101828 !important;
+        background-color: #fff !important;
+        font-size: 14px !important;
+        box-shadow: none !important;
+        transition: all .2s ease;
+    }
+
+    .po-input,
+    .po-select {
+        min-height: 46px;
+    }
+
+    .po-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .po-input:focus,
+    .po-select:focus,
+    .po-textarea:focus {
+        border-color: #b91c1c !important;
+        box-shadow: 0 0 0 4px rgba(185, 28, 28, .10) !important;
+    }
+
+    /* Product table */
+    .po-table-container {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .po-table {
+        margin: 0 !important;
+    }
+
+    .po-table thead th {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        color: #667085;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .05em;
+        padding: 14px 16px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .po-table tbody td {
+        padding: 15px 16px;
+        border-bottom: 1px solid #f0f2f5;
+        color: #344054;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .po-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .po-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .po-product-name {
+        color: #101828;
+        font-weight: 700;
+        margin-bottom: 3px;
+    }
+
+    .po-product-sku {
+        color: #98a2b3;
+        font-size: 12px;
+    }
+
+    .po-stock-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        padding: 5px 9px;
+        border-radius: 7px;
+        background: #f2f4f7;
+        color: #475467;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .po-table-input {
+        width: 100%;
+        min-width: 130px;
+        height: 40px;
+        border: 1px solid #d0d5dd;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        color: #101828;
+        outline: none;
+        transition: all .2s ease;
+    }
+
+    .po-table-input:focus {
+        border-color: #b91c1c;
+        box-shadow: 0 0 0 3px rgba(185, 28, 28, .10);
+    }
+
+    /* Bottom cards */
+    .po-bottom-card {
+        height: 100%;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fafafa;
+    }
+
+    .po-bottom-title {
+        color: #101828;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 16px;
+    }
+
+    /* Action */
+    .po-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 24px;
+        margin-top: 26px;
+        border-top: 1px solid #eaecf0;
+    }
+
+    .po-btn-save {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 140px;
+        min-height: 44px;
+        padding: 10px 20px;
+        border: 0;
+        border-radius: 9px;
+        background: #b91c1c;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(185, 28, 28, .20);
+        transition: all .2s ease;
+    }
+
+    .po-btn-save:hover {
+        background: #991b1b;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 18px rgba(185, 28, 28, .25);
+    }
+
+    .po-btn-save:active {
+        transform: translateY(0);
+    }
+
+    /* Empty state */
+    .po-empty {
+        padding: 45px 20px !important;
+        text-align: center;
+    }
+
+    .po-empty-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-weight: 800;
+        font-size: 18px;
+    }
+
+    .po-empty-title {
+        color: #101828;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .po-empty-text {
+        color: #667085;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+
+        .po-page-title {
+            font-size: 24px;
+        }
+
+        .po-card-header,
+        .po-card-body {
+            padding: 20px;
+        }
+
+        .po-actions {
+            flex-direction: column;
+        }
+
+        .po-btn-save {
+            width: 100%;
+        }
+
+        .po-table-container {
+            overflow-x: auto;
+        }
+
+    }
+</style>
+
+
+<div class="po-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+    <div class="po-page-header">
+
+        <div class="po-breadcrumb">
+            Pembelian
+        </div>
+
+        <h1 class="po-page-title">
+            Buat Purchase Order
+        </h1>
+
+        <p class="po-page-subtitle">
+            Buat pesanan pembelian baru kepada supplier.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         MESSAGE
+    ====================================================== -->
+    {% include "components/messages.html" %}
+
+
+    <!-- =====================================================
+         FORM CARD
+    ====================================================== -->
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="po-card">
+
+            <!-- Card Header -->
+            <div class="po-card-header">
+
+                <h2 class="po-card-title">
+                    Informasi Purchase Order
+                </h2>
+
+                <p class="po-card-description">
+                    Lengkapi informasi pesanan sebelum menambahkan produk.
+                </p>
+
+            </div>
+
+
+            <!-- Card Body -->
+            <div class="po-card-body">
+
+
+                <!-- =================================================
+                     INFORMASI PO
+                ================================================== -->
+                <div class="po-section">
+
+                    <div class="row g-4">
+
+                        <!-- Nomor PO -->
+                        <div class="col-12 col-lg-6">
+
+                            <label
+                                for="po_number"
+                                class="form-label po-label"
+                            >
+                                Nomor PO
+                                <span class="po-required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="po_number"
+                                name="po_number"
+                                class="form-control po-input"
+                                placeholder="Masukkan nomor PO"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- Tanggal -->
+                        <div class="col-12 col-lg-6">
+
+                            <label
+                                for="order_date"
+                                class="form-label po-label"
+                            >
+                                Tanggal
+                            </label>
+
+                            <input
+                                type="date"
+                                id="order_date"
+                                name="order_date"
+                                class="form-control po-input"
+                            >
+
+                        </div>
+
+
+                        <!-- Supplier -->
+                        <div class="col-12">
+
+                            <label
+                                for="supplier_id"
+                                class="form-label po-label"
+                            >
+                                Supplier
+                                <span class="po-required">*</span>
+                            </label>
+
+                            <select
+                                id="supplier_id"
+                                name="supplier_id"
+                                class="form-select po-select"
+                                required
+                            >
+
+                                <option value="">
+                                    Pilih supplier
+                                </option>
+
+                                {% for s in suppliers %}
+
+                                    <option value="{{ s.id }}">
+                                        {{ s.code }} - {{ s.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     ITEM PRODUK
+                ================================================== -->
+                <div class="po-section">
+
+                    <div class="po-section-title">
+                        Item Produk
+                    </div>
+
+                    <div class="po-section-description">
+                        Masukkan harga beli dan jumlah produk yang ingin dipesan.
+                    </div>
+
+
+                    <div class="po-table-container">
+
+                        <div class="table-responsive">
+
+                            <table class="table table-hover align-middle po-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th style="width: 36%;">
+                                            Produk
+                                        </th>
+
+                                        <th style="width: 12%;">
+                                            Stok
+                                        </th>
+
+                                        <th style="width: 26%;">
+                                            Harga Beli
+                                        </th>
+
+                                        <th style="width: 26%;">
+                                            Qty
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for p in products %}
+
+                                        <tr>
+
+                                            <!-- Produk -->
+                                            <td>
+
+                                                <div class="po-product-name">
+                                                    {{ p.name }}
+                                                </div>
+
+                                                <div class="po-product-sku">
+                                                    SKU: {{ p.sku }}
+                                                </div>
+
+                                            </td>
+
+
+                                            <!-- Stok -->
+                                            <td>
+
+                                                <span class="po-stock-badge">
+                                                    {{ p.stock }}
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- Harga Beli -->
+                                            <td>
+
+                                                <input
+                                                    type="number"
+                                                    name="price_{{ forloop.counter0 }}"
+                                                    value="{{ p.purchase_price|default:0 }}"
+                                                    min="0"
+                                                    step="0.01"
+                                                    class="po-table-input"
+                                                >
+
+                                            </td>
+
+
+                                            <!-- Quantity -->
+                                            <td>
+
+                                                <input
+                                                    type="number"
+                                                    name="qty_{{ forloop.counter0 }}"
+                                                    min="0"
+                                                    class="po-table-input"
+                                                    placeholder="0"
+                                                >
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% empty %}
+
+                                        <tr>
+
+                                            <td
+                                                colspan="4"
+                                                class="po-empty"
+                                            >
+
+                                                <div class="po-empty-icon">
+                                                    !
+                                                </div>
+
+                                                <div class="po-empty-title">
+                                                    Belum ada produk
+                                                </div>
+
+                                                <p class="po-empty-text">
+                                                    Tidak ada produk yang tersedia untuk dipilih.
+                                                </p>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     DISKON & CATATAN
+                ================================================== -->
+                <div class="po-section">
+
+                    <div class="row g-4">
+
+                        <!-- Diskon -->
+                        <div class="col-12 col-lg-4">
+
+                            <div class="po-bottom-card">
+
+                                <div class="po-bottom-title">
+                                    Diskon
+                                </div>
+
+                                <label
+                                    for="discount"
+                                    class="form-label po-label"
+                                >
+                                    Nilai Diskon
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="discount"
+                                    name="discount"
+                                    min="0"
+                                    step="0.01"
+                                    value="0"
+                                    class="form-control po-input"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Catatan -->
+                        <div class="col-12 col-lg-8">
+
+                            <div class="po-bottom-card">
+
+                                <div class="po-bottom-title">
+                                    Catatan
+                                </div>
+
+                                <label
+                                    for="notes"
+                                    class="form-label po-label"
+                                >
+                                    Catatan Purchase Order
+                                </label>
+
+                                <textarea
+                                    id="notes"
+                                    name="notes"
+                                    class="form-control po-textarea"
+                                    placeholder="Tambahkan catatan jika diperlukan..."
+                                ></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     ACTION
+                ================================================== -->
+                <div class="po-actions">
+
+                    <button
+                        type="submit"
+                        class="po-btn-save"
+                    >
+                        <span>✓</span>
+                        Simpan PO
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

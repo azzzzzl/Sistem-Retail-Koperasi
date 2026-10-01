@@ -1,46 +1,269 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h1>Profil Saya</h1>
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
 
-<div>
-    <p>
-        <strong>Nama:</strong>
-        {{ user.name }}
-    </p>
+<div class="profile-page">
 
-    <p>
-        <strong>Username:</strong>
-        {{ user.username }}
-    </p>
+    <!-- PAGE HEADER -->
+    <div class="profile-page-header">
+        <div class="profile-page-heading">
+            <p class="profile-page-eyebrow">Account</p>
 
-    <p>
-        <strong>Email:</strong>
-        {{ user.email }}
-    </p>
+            <h1 class="profile-page-title">
+                Profil Saya
+            </h1>
 
-    <p>
-        <strong>Role:</strong>
-        {{ user.role }}
-    </p>
+            <p class="profile-page-description">
+                Informasi akun dan akses Anda di dalam sistem KOPERA.
+            </p>
+        </div>
+    </div>
 
-    <p>
-        <strong>Status:</strong>
-        {{ user.status }}
-    </p>
+
+    <!-- PROFILE LAYOUT -->
+    <div class="profile-layout">
+
+        <!-- =========================================
+             LEFT : PROFILE SUMMARY
+             ========================================= -->
+        <div class="profile-card">
+
+            <div class="profile-card-header">
+
+                <div class="profile-avatar">
+                    {{ user.name|default:user.username|slice:":1" }}
+                </div>
+
+                <h2 class="profile-name">
+                    {{ user.name|default:"Pengguna KOPERA" }}
+                </h2>
+
+                <p class="profile-username">
+                    @{{ user.username }}
+                </p>
+
+                {% if user.role|lower == "admin" %}
+                    <span class="profile-role profile-role-admin">
+                        Admin
+                    </span>
+
+                {% elif user.role|lower == "pengurus" %}
+                    <span class="profile-role profile-role-pengurus">
+                        Pengurus
+                    </span>
+
+                {% elif user.role|lower == "kasir" %}
+                    <span class="profile-role profile-role-kasir">
+                        Kasir
+                    </span>
+
+                {% elif user.role|lower == "member" %}
+                    <span class="profile-role profile-role-member">
+                        Member
+                    </span>
+
+                {% elif user.role|lower == "anggota" %}
+                    <span class="profile-role profile-role-anggota">
+                        Anggota
+                    </span>
+
+                {% elif user.role|lower == "pembeli" %}
+                    <span class="profile-role profile-role-pembeli">
+                        Pembeli
+                    </span>
+
+                {% else %}
+                    <span class="profile-role profile-role-default">
+                        {{ user.role|default:"User" }}
+                    </span>
+                {% endif %}
+
+            </div>
+
+
+            <!-- SIDE INFORMATION -->
+            <div class="profile-side-info">
+
+                <div class="profile-side-item">
+                    <span class="profile-side-label">
+                        Informasi Akun
+                    </span>
+
+                    <span class="profile-side-value">
+                        —
+                    </span>
+                </div>
+
+                <div class="profile-side-item">
+                    <span class="profile-side-label">
+                        Nama Lengkap
+                    </span>
+
+                    <span class="profile-side-value">
+                        {{ user.name|default:"-" }}
+                    </span>
+                </div>
+
+                <div class="profile-side-item">
+                    <span class="profile-side-label">
+                        Username
+                    </span>
+
+                    <span class="profile-side-value">
+                        {{ user.username|default:"-" }}
+                    </span>
+                </div>
+
+                <div class="profile-side-item">
+                    <span class="profile-side-label">
+                        Email
+                    </span>
+
+                    <span class="profile-side-value">
+                        {{ user.email|default:"-" }}
+                    </span>
+                </div>
+
+                <div class="profile-side-item">
+                    <span class="profile-side-label">
+                        Role
+                    </span>
+
+                    <span class="profile-side-value">
+                        {{ user.role|default:"-" }}
+                    </span>
+                </div>
+
+                <div class="profile-side-item">
+                    <span class="profile-side-label">
+                        Status
+                    </span>
+
+                    <span class="profile-side-value">
+
+                        {% if user.status|lower == "active" or user.status|lower == "aktif" %}
+                            <span class="profile-status profile-status-active">
+                                Aktif
+                            </span>
+                        {% else %}
+                            <span class="profile-status profile-status-inactive">
+                                {{ user.status|default:"Tidak Aktif" }}
+                            </span>
+                        {% endif %}
+
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             RIGHT : ACCOUNT SETTINGS
+             ========================================= -->
+        <div>
+
+            <div class="profile-detail-card">
+
+                <div class="profile-detail-header">
+
+                    <h2 class="profile-detail-title">
+                        Pengaturan Akun
+                    </h2>
+
+                    <p class="profile-detail-description">
+                        Kelola keamanan dan akses akun Anda.
+                    </p>
+
+                </div>
+
+
+                <div class="profile-detail-body">
+
+                    <div class="profile-info-grid">
+
+                        <!-- PASSWORD -->
+                        <div class="profile-info-item">
+
+                            <span class="profile-info-label">
+                                Keamanan
+                            </span>
+
+                            <span class="profile-info-value">
+                                Password akun
+                            </span>
+
+                        </div>
+
+
+                        <!-- ROLE -->
+                        <div class="profile-info-item">
+
+                            <span class="profile-info-label">
+                                Hak Akses
+                            </span>
+
+                            <span class="profile-info-value">
+                                {{ user.role|default:"User" }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+                    <div class="profile-actions">
+
+                        <a
+                            href="{% url 'password_change' %}"
+                            class="profile-btn profile-btn-primary"
+                        >
+                            🔑&nbsp; Ubah Password
+                        </a>
+
+                        <a
+                            href="{% url 'dashboard' %}"
+                            class="profile-btn profile-btn-secondary"
+                        >
+                            ←&nbsp; Kembali ke Dashboard
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SECURITY INFORMATION -->
+            <div class="profile-security-card">
+
+                <div class="profile-security-header">
+
+                    <div>
+                        <h3 class="profile-security-title">
+                            Keamanan Akun
+                        </h3>
+
+                        <p class="profile-security-description">
+                            Gunakan password yang kuat dan jangan membagikan
+                            informasi login kepada orang lain.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
-
-<p>
-    <a href="{% url 'password_change' %}">
-        Ubah Password
-    </a>
-</p>
-
-<p>
-    <a href="{% url 'dashboard' %}">
-        Kembali ke Dashboard
-    </a>
-</p>
 
 {% endblock %}
