@@ -1,3 +1,4 @@
+from apps.authentication.decorators import permission_required_custom
 import json
 from datetime import datetime
 
@@ -31,6 +32,7 @@ def serialize_data(data):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("goods_receipt")
 def goods_receipt_list(request):
     service = GoodsReceiptService()
 
@@ -46,6 +48,7 @@ def goods_receipt_list(request):
 
 
 @require_http_methods(["POST"])
+@permission_required_custom("goods_receipt")
 def goods_receipt_create(request):
     try:
         data = json.loads(
@@ -126,6 +129,7 @@ def goods_receipt_create(request):
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("goods_receipt")
 def goods_receipt_detail(
     request,
     receipt_id,
@@ -159,6 +163,7 @@ def goods_receipt_detail(
 
 
 @require_http_methods(["GET"])
+@permission_required_custom("goods_receipt")
 def goods_receipt_by_po(
     request,
     po_id,

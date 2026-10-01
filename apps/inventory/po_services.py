@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from .po_repositories import PurchaseOrderRepository
+from apps.master_data.services import MasterDataService
 
 
 class PurchaseOrderService:
@@ -27,6 +28,7 @@ class PurchaseOrderService:
 
     def __init__(self):
         self.repository = PurchaseOrderRepository()
+        self.master = MasterDataService()
 
     def _to_number(self, value, field_name):
         try:
@@ -46,8 +48,18 @@ class PurchaseOrderService:
     def _format_number(self, value):
         if value == value.to_integral_value():
             return int(value)
-
         return float(value)
+
+    def _parse_date(self, value, field_name):
+        if value is None or isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError(f"{field_name} harus berupa tanggal.")
+        try:
+            result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError(f"{field_name} memiliki format tanggal tidak valid.") from exc
+        return result if result.tzinfo else result.replace(tzinfo=timezone.utc)
 
     def _validate_items(self, items):
         if not isinstance(items, list) or not items:
@@ -70,11 +82,17 @@ class PurchaseOrderService:
                     "productId wajib diisi."
                 )
 
+            product = self.master.get_product_by_id(product_id)
+            if not product or product.get("status", "active") not in {"active", True}:
+                raise ValueError(f"Produk {product_id} tidak ditemukan atau tidak aktif.")
+
             name = item.get(
                 "name",
                 ""
             )
 
+            if not name:
+                name = product.get("name", "")
             if not name:
                 raise ValueError(
                     "name produk wajib diisi."
@@ -135,6 +153,10 @@ class PurchaseOrderService:
                 "supplierId wajib diisi."
             )
 
+        supplier = self.master.get_supplier_by_id(supplier_id)
+        if not supplier or supplier.get("status", "active") not in {"active", True}:
+            raise ValueError("Supplier tidak ditemukan atau tidak aktif.")
+
         existing_po = (
             self.repository.find_by_number(
                 po_number
@@ -168,6 +190,7 @@ class PurchaseOrderService:
 
         total = subtotal - discount
 
+        order_date = self._parse_date(order_date, "orderDate")
         if order_date is None:
             order_date = datetime.now(timezone.utc)
 
